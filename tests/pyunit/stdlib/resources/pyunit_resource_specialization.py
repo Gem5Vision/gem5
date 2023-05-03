@@ -80,8 +80,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of of a BinaryResource"""
         resource = obtain_resource(
             resource_id="binary-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, BinaryResource)
@@ -96,8 +95,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a KernelResource."""
         resource = obtain_resource(
             resource_id="kernel-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, KernelResource)
@@ -112,8 +110,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a BootloaderResource."""
         resource = obtain_resource(
             resource_id="bootloader-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, BootloaderResource)
@@ -128,8 +125,8 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a DiskImageResource."""
         resource = obtain_resource(
             resource_id="disk-image-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
+  
         )
 
         self.assertIsInstance(resource, DiskImageResource)
@@ -144,8 +141,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a CheckpointResource."""
         resource = obtain_resource(
             resource_id="checkpoint-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, CheckpointResource)
@@ -159,8 +155,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a GitResource."""
         resource = obtain_resource(
             resource_id="git-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, GitResource)
@@ -172,8 +167,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a Simpoint directory resource."""
         resource = obtain_resource(
             resource_id="simpoint-directory-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, SimpointDirectoryResource)
@@ -207,8 +201,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a Simpoint resource."""
         resource = obtain_resource(
             resource_id="simpoint-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, SimpointResource)
@@ -241,8 +234,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a DirectoryResource."""
         resource = obtain_resource(
             resource_id="directory-example",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, DirectoryResource)
@@ -258,8 +250,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
 
         resource = obtain_resource(
             resource_id="looppoint-pinpoint-csv-resource",
-            resource_directory=self.get_resource_dir(),
-            resource_version="1.0.0",
+            resource_directory=self.get_resource_dir()
         )
 
         self.assertIsInstance(resource, LooppointCsvResource)

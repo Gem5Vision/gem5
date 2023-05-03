@@ -179,7 +179,6 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
         self.assertEquals("batman", json[2]["id"])
         self.assertTrue("id" in json[3])
         self.assertEquals("batman", json[3]["id"])
-        
 
     def test_get_resources_json_at_path(self) -> None:
         # Tests the gem5.resources.downloader._get_resources_json_at_path()
@@ -187,23 +186,11 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
 
         json = _get_resources_json_at_path(path=self.file_path)
         self.verify_json(json=json)
-    
-    def test_get_resources_mongo_at_uri(self) -> None:
-        # Tests the gem5.resources.downloader._get_resources_mongo_at_uri() function.
-
-        json = _get_resources_mongo_at_uri(uri="mongodb://localhost:27017")
-        self.verify_json(json=json)
 
     def test_get_resources_json(self) -> None:
         # Tests the gem5.resources.downloader._get_resources_json() function.
 
         json = _get_resources_json()
-        self.verify_json(json=json)
-    
-    def test_get_resources_mongo(self) -> None:
-        # Tests the gem5.resources.downloader._get_resources_mongo() function.
-
-        json = _get_resources_mongo()
         self.verify_json(json=json)
 
     def test_get_resources_json_invalid_url(self) -> None:
@@ -223,17 +210,3 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
 
         # Set back to the old path
         os.environ["GEM5_RESOURCE_JSON"] = self.file_path
-    
-    def test_get_resources_mongo_invalid_uri(self) -> None:
-        uri="NotAURI"
-        os.environ["GEM5_RESOURCE_MONGO"] = uri
-        with self.assertRaises(Exception) as context:
-            _get_resources_mongo()
-        
-        self.assertTrue(
-            f"Resources location '{uri}' is not a valid MongoDB URI."
-            in str(context.exception)
-        )
-        
-        os.environ["GEM5_RESOURCE_MONGO"] = "mongodb://localhost:27017"
-        
