@@ -144,6 +144,3 @@ class TestObtainResourcesCheck(unittest.TestCase):
             "Invalid Version - Version not found for resource test-binary-resource in gem5 Resources"
             in str(context.exception)
         )
-
-    def test_hashiru(self):
-        self.assertTrue(True)
