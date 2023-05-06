@@ -70,6 +70,7 @@ class AbstractResource:
         local_path: Optional[str] = None,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
     ):
         """
         :param local_path: The path on the host system where this resource is
@@ -90,6 +91,11 @@ class AbstractResource:
         self._local_path = local_path
         self._documentation = documentation
         self._source = source
+        self._version = version
+
+    def get_resource_version(self) -> str:
+        """Returns the version of the resource."""
+        return self._version
 
     def get_local_path(self) -> Optional[str]:
         """Returns the local path of the resource."""
@@ -114,6 +120,7 @@ class FileResource(AbstractResource):
         local_path: str,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         if not os.path.isfile(local_path):
@@ -125,6 +132,7 @@ class FileResource(AbstractResource):
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
 
@@ -136,6 +144,7 @@ class DirectoryResource(AbstractResource):
         local_path: str,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
 
@@ -149,6 +158,7 @@ class DirectoryResource(AbstractResource):
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
 
@@ -161,12 +171,14 @@ class DiskImageResource(FileResource):
         documentation: Optional[str] = None,
         source: Optional[str] = None,
         root_partition: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         super().__init__(
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
         self._root_partition = root_partition
 
@@ -184,12 +196,14 @@ class BinaryResource(FileResource):
         documentation: Optional[str] = None,
         source: Optional[str] = None,
         architecture: Optional[Union[ISA, str]] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         super().__init__(
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
         self._architecture = None
@@ -213,6 +227,7 @@ class BootloaderResource(BinaryResource):
         documentation: Optional[str] = None,
         source: Optional[str] = None,
         architecture: Optional[Union[ISA, str]] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         super().__init__(
@@ -220,6 +235,7 @@ class BootloaderResource(BinaryResource):
             documentation=documentation,
             architecture=architecture,
             source=source,
+            version=version,
         )
 
 
@@ -231,12 +247,14 @@ class GitResource(DirectoryResource):
         local_path: str,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         super().__init__(
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
 
@@ -249,6 +267,7 @@ class KernelResource(BinaryResource):
         documentation: Optional[str] = None,
         source: Optional[str] = None,
         architecture: Optional[Union[ISA, str]] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         super().__init__(
@@ -256,6 +275,7 @@ class KernelResource(BinaryResource):
             documentation=documentation,
             source=source,
             architecture=architecture,
+            version=version,
         )
 
 
@@ -272,12 +292,14 @@ class CheckpointResource(DirectoryResource):
         local_path: str,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         super().__init__(
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
 
@@ -298,6 +320,7 @@ class SimpointResource(AbstractResource):
         documentation: Optional[str] = None,
         source: Optional[str] = None,
         local_path: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         """
@@ -316,6 +339,7 @@ class SimpointResource(AbstractResource):
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
         self._weight_list = weight_list
@@ -404,6 +428,7 @@ class LooppointCsvResource(FileResource, LooppointCsvLoader):
         local_path: str,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         FileResource.__init__(
@@ -411,6 +436,7 @@ class LooppointCsvResource(FileResource, LooppointCsvLoader):
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
         LooppointCsvLoader.__init__(self, pinpoints_file=Path(local_path))
 
@@ -422,6 +448,7 @@ class LooppointJsonResource(FileResource, LooppointJsonLoader):
         region_id: Optional[Union[str, int]] = None,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         FileResource.__init__(
@@ -429,6 +456,7 @@ class LooppointJsonResource(FileResource, LooppointJsonLoader):
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
         LooppointJsonLoader.__init__(
             self, looppoint_file=local_path, region_id=region_id
@@ -449,6 +477,7 @@ class SimpointDirectoryResource(SimpointResource):
         workload_name: Optional[str] = None,
         documentation: Optional[str] = None,
         source: Optional[str] = None,
+        version: str = "1.0.0",
         **kwargs,
     ):
         """
@@ -480,6 +509,7 @@ class SimpointDirectoryResource(SimpointResource):
             local_path=local_path,
             documentation=documentation,
             source=source,
+            version=version,
         )
 
     def get_simpoint_file(self) -> Path:
@@ -522,9 +552,10 @@ class SimpointDirectoryResource(SimpointResource):
 
 
 def obtain_resource(
-    resource_name: str,
+    resource_id: str,
     resource_directory: Optional[str] = None,
     download_md5_mismatch: bool = True,
+    resource_version: Optional[str] = None,
 ) -> AbstractResource:
     """
     This function primarily serves as a factory for resources. It will return
@@ -547,7 +578,7 @@ def obtain_resource(
     """
 
     # Obtain the JSON resource entry for this resource
-    resource_json = get_resources_json_obj(resource_name)
+    resource_json = get_resources_json_obj(resource_id)
 
     to_path = None
     # If the "url" field is specified, the resoruce must be downloaded.
@@ -580,12 +611,12 @@ def obtain_resource(
             os.makedirs(resource_directory, exist_ok=True)
 
         # This is the path to which the resource is to be stored.
-        to_path = os.path.join(resource_directory, resource_name)
+        to_path = os.path.join(resource_directory, resource_id)
 
         # Download the resource if it does not already exist.
         get_resource(
-            resource_name=resource_name,
-            to_path=os.path.join(resource_directory, resource_name),
+            resource_name=resource_id,
+            to_path=os.path.join(resource_directory, resource_id),
             download_md5_mismatch=download_md5_mismatch,
         )
 
@@ -696,6 +727,7 @@ class CustomDiskImageResource(DiskImageResource):
         local_path: str,
         root_partition: Optional[str] = None,
         metadata: Dict = {},
+        version: str = "1.0.0",
     ):
         """
         :param local_path: The path of the disk image on the host system.
@@ -713,7 +745,7 @@ class CustomDiskImageResource(DiskImageResource):
                 "`CustomDiskImageResource` constructor. This parameter is not "
                 "used."
             )
-        super().__init__(local_path=local_path, root_partition=root_partition)
+        super().__init__(local_path=local_path, root_partition=root_partition, version=version)
 
 
 def Resource(
@@ -737,7 +769,7 @@ def Resource(
     )
 
     return obtain_resource(
-        resource_name=resource_name,
+        resource_id=resource_name,
         resource_directory=resource_directory,
         download_md5_mismatch=download_md5_mismatch,
     )
