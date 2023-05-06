@@ -61,7 +61,7 @@ class JSONClient:
             return self.__search_version(resources, resource_version)
 
         # if no version is given, return the compatible resource with the latest version
-        return self.__get_compatible_resources(resources)[0]
+        return self.__get_compatible_resource(resources)
 
     def __search_version(self, resources, resource_version) -> dict:
         """Searches for the resource with the given version. If the resource is not found, throws an exception."""
@@ -78,17 +78,14 @@ class JSONClient:
             "versions can be found at: "
             f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions")
 
-    def __get_compatible_resources(self, resources) -> list:
+    def __get_compatible_resource(self, resources) -> dict:
         """Returns the compatible resources with the given gem5 version."""
-        compatible_resources = []
         for resource in resources:
             if defines.gem5Version in resource["gem5_versions"]:
-                compatible_resources.append(resource)
+                return resource
 
-        if len(compatible_resources) == 0:
-            warn(
-                f"Resource compatible with gem5 version: '{defines.gem5Version}' not found.\n"
-                "Resource versions can be found at: "
-                f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions")
-            return resources
-        return compatible_resources
+        warn(
+            f"Resource compatible with gem5 version: '{defines.gem5Version}' not found.\n"
+            "Resource versions can be found at: "
+            f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions")
+        return resources[0]
