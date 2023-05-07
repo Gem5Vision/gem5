@@ -109,7 +109,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
             obtain_resource(resource_id="test-binary-resource",
                             resource_directory=self.get_resource_dir(),
                             resource_version="1.5.0")
-            
+
         self.assertTrue(
             f"""Version 1.5.0 of resource test-binary-resource is not compatible with gem5 version {gem5Version}
             Version 1.5.0 of resource test-binary-resource is compatible with gem5 versions [21.1, 22.1]"""
@@ -124,7 +124,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
             "Invalid Resource - ID not found in gem5 Resources"
             in str(context.exception)
         )
-    
+
     def test_obtain_resources_with_version_invalid_id(self):
         with self.assertRaises(Exception) as context:
             obtain_resource(resource_id="invalid-id",
@@ -134,7 +134,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
             "Invalid Resource - ID not found in gem5 Resources"
             in str(context.exception)
         )
-    
+
     def test_obtain_resources_with_version_invalid_version(self):
         with self.assertRaises(Exception) as context:
             obtain_resource(resource_id="test-binary-resource",
