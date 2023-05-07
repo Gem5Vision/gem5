@@ -15,7 +15,6 @@ class AbstractClient(ABC):
         If not given, the latest version compatible with the current
         gem5 version is returned.
         """
-        pass
 
     def _url_validator(self, url):
         """
@@ -58,7 +57,8 @@ class AbstractClient(ABC):
         Returns a list of compatible resources with the given gem5 version.
         :param resources: A list of resources to filter.
         :return: A list of compatible resources as Python dictionaries.
-        If no compatible resources are found, the original list of resources is returned.
+        If no compatible resources are found, the original list of resources 
+        is returned.
         """
         compatible_resources = []
         for resource in resources:
