@@ -36,6 +36,8 @@ from ..isas import ISA, get_isa_from_str
 
 from typing import Optional, Dict, Union, Type, Tuple, List
 
+from api.client_wrapper import get_resource_obj
+
 """
 Resources are items needed to run a simulation, such as a disk image, kernel,
 or binary. The gem5 project provides pre-built resources, with sources, at
@@ -147,7 +149,6 @@ class DirectoryResource(AbstractResource):
         version: str = "1.0.0",
         **kwargs,
     ):
-
         if not os.path.isdir(local_path):
             raise Exception(
                 f"DirectoryResource path specified, {local_path}, is not a "
@@ -556,6 +557,7 @@ def obtain_resource(
     resource_directory: Optional[str] = None,
     download_md5_mismatch: bool = True,
     resource_version: Optional[str] = None,
+    database: Optional[str] = None,
 ) -> AbstractResource:
     """
     This function primarily serves as a factory for resources. It will return
@@ -578,12 +580,13 @@ def obtain_resource(
     """
 
     # Obtain the JSON resource entry for this resource
-    resource_json = get_resources_json_obj(resource_id)
+    resource_json = get_resource_obj(
+        resource_id, resource_version=resource_version, database=database
+    )
 
     to_path = None
     # If the "url" field is specified, the resoruce must be downloaded.
     if "url" in resource_json and resource_json["url"]:
-
         # If the `resource_directory` parameter is not set via this function, we
         # check the "GEM5_RESOURCE_DIR" environment variable. If this too is not
         # set we call `_get_default_resource_dir()` to determine where the
@@ -618,13 +621,15 @@ def obtain_resource(
             resource_name=resource_id,
             to_path=os.path.join(resource_directory, resource_id),
             download_md5_mismatch=download_md5_mismatch,
+            resource_version=resource_version,
+            database=database,
         )
 
     # Obtain the type from the JSON. From this we will determine what subclass
     # of `AbstractResource` we are to create and return.
-    resources_type = resource_json["type"]
+    resources_category = resource_json["category"]
 
-    if resources_type == "resource":
+    if resources_category == "resource":
         # This is a stop-gap measure to ensure to work with older versions of
         # the "resource.json" file. These should be replaced with their
         # respective specializations ASAP and this case removed.
@@ -641,8 +646,8 @@ def obtain_resource(
             )
         return CustomResource(local_path=to_path)
 
-    assert resources_type in _get_resource_json_type_map
-    resource_class = _get_resource_json_type_map[resources_type]
+    assert resources_category in _get_resource_json_type_map
+    resource_class = _get_resource_json_type_map[resources_category]
 
     # Once we know what AbstractResource subclass we are using, we create it.
     # The fields in the JSON object are assumed to map like-for-like to the
@@ -745,7 +750,11 @@ class CustomDiskImageResource(DiskImageResource):
                 "`CustomDiskImageResource` constructor. This parameter is not "
                 "used."
             )
-        super().__init__(local_path=local_path, root_partition=root_partition, version=version)
+        super().__init__(
+            local_path=local_path,
+            root_partition=root_partition,
+            version=version,
+        )
 
 
 def Resource(

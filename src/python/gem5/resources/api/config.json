@@ -1,0 +1,15 @@
+{
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "resources": {
+        "gem5-resources": {
+            "database": "gem5-vision",
+            "collection": "resources",
+            "uri": "mongodb+srv://gem5_user:gem5_user@gem5-vision.wp3weei.mongodb.net/?retryWrites=true&w=majority",
+            "isMongo": true
+        },
+        "atharav": {
+            "url": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/kiwi1.json",
+            "isMongo": false
+        }
+    }
+}
