@@ -28,7 +28,7 @@ class Test(unittest.TestCase):
         """
         del os.environ["GEM5_RESOURCE_JSON"]
 
-    def get_resource_dir(cls) -> str:
+    def get_resource_dir(self) -> str:
         """To ensure the resources are cached to the same directory as all
         other tests, this function returns the location of the testing
         directories "resources" directory.
