@@ -1,11 +1,7 @@
 import json
 from pathlib import Path
-from m5 import defines
-import urllib.request
-import urllib.parse
 import requests
-from m5.util import warn, fatal
-from client import AbstractClient
+from .client import AbstractClient
 
 
 class JSONClient(AbstractClient):
@@ -41,7 +37,7 @@ class JSONClient(AbstractClient):
         ]
         # if no resource with the given id is found throw an exception
         if len(resources) == 0:
-            fatal(f"Resource with ID '{resource_id}' not found.")
+            raise Exception(f"Resource with ID '{resource_id}' not found.")
         # sorting the resources by version
         resources.sort(
             key=lambda x: list(map(int, x["resource_version"].split("."))),

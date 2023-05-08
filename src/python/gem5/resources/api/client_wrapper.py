@@ -1,5 +1,5 @@
-from jsonclient import JSONClient
-from mongoclient import MongoClient
+from .jsonclient import JSONClient
+from .mongoclient import MongoClient
 import json
 from pathlib import Path
 
@@ -21,5 +21,4 @@ def get_resource_obj(
 ) -> dict:
     if not database:
         database = list(clients.keys())[0]
-    print(database)
     return clients[database].get_resource_obj(resource_id, resource_version)

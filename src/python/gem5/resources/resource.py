@@ -27,6 +27,7 @@
 from abc import ABCMeta
 import os
 from pathlib import Path
+# from m5.util import warn, fatal
 from m5.util import warn, fatal
 
 from .downloader import get_resource, get_resources_json_obj

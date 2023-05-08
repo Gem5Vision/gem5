@@ -1,6 +1,5 @@
 import pymongo
-from m5.util import warn, fatal
-from client import AbstractClient
+from .client import AbstractClient
 
 
 class MongoClient(AbstractClient):
@@ -28,7 +27,7 @@ class MongoClient(AbstractClient):
         )
         # if no resource with the given ID is found throw an Exception
         if len(resources) == 0:
-            fatal(f"Resource with ID '{resource_id}' not found.")
+            raise Exception(f"Resource with ID '{resource_id}' not found.")
         # sorting the resources by version
         resources.sort(
             key=lambda x: list(map(int, x["resource_version"].split("."))),

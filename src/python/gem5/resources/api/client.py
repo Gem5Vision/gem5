@@ -1,8 +1,8 @@
 from abc import abstractmethod, ABC
 import urllib.request
 import urllib.parse
-from m5 import defines
-from m5.util import warn, fatal
+from .m5 import defines
+import warnings
 
 
 class AbstractClient(ABC):
@@ -40,13 +40,13 @@ class AbstractClient(ABC):
         for resource in resources:
             if resource["resource_version"] == resource_version:
                 if defines.gem5Version not in resource["gem5_versions"]:
-                    warn(
+                    warnings.warn(
                         f"Resource compatible with gem5 version: '{defines.gem5Version}' not found.\n"
                         "Resource versions can be found at: "
                         f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
                     )
                 return resource
-        fatal(
+        raise Exception(
             f"Resource {resources[0]['id']} with version '{resource_version}'"
             " not found.\nResource versions can be found at: "
             f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
@@ -66,7 +66,7 @@ class AbstractClient(ABC):
                 compatible_resources.append(resource)
 
         if len(compatible_resources) == 0:
-            warn(
+            warnings.warn(
                 f"Resource compatible with gem5 version: '{defines.gem5Version}' not found.\n"
                 "Resource versions can be found at: "
                 f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"

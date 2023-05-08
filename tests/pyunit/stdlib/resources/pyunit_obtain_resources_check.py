@@ -41,6 +41,7 @@ from gem5.isas import ISA
 from m5 import defines
 
 
+
 class TestObtainResourcesCheck(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -104,24 +105,32 @@ class TestObtainResourcesCheck(unittest.TestCase):
 
     def test_obtain_resources_with_version_incompatible(self):
 
-        with self.assertRaises(Exception) as context:
-            gem5Version = defines.gem5Version
-            obtain_resource(resource_id="test-binary-resource",
-                            resource_directory=self.get_resource_dir(),
-                            resource_version="1.5.0")
+        resource = None
+        with self.assertWarns(Warning) as warning:
+            resource = obtain_resource(resource_id="test-binary-resource",
+                                       resource_directory=self.get_resource_dir(),
+                                       resource_version="1.5.0").parse_args([])
+        self.assertEqual(f"Resource compatible with gem5 version: '{defines.gem5Version}' not found.\n"
+                        "Resource versions can be found at: "
+                        f"https://gem5vision.github.io/gem5-resources-website/resources/test-binary-resource/versions" in warning.warning.args[0])
 
-        self.assertTrue(
-            f"""Version 1.5.0 of resource test-binary-resource is not compatible with gem5 version {gem5Version}
-            Version 1.5.0 of resource test-binary-resource is compatible with gem5 versions [21.1, 22.1]"""
-            in str(context.exception)
+        resource = obtain_resource(resource_id="test-binary-resource",
+                                   resource_directory=self.get_resource_dir(),
+                                   resource_version="1.5.0")
+        self.assertEquals("1.5.0", resource.get_resource_version())
+        self.assertIsInstance(resource, BinaryResource)
+        self.self.assertEquals(
+            "test documentation for 1.5.0", resource.get_documentation()
         )
+        self.assertEquals("src/test-source", resource.get_source())
+        self.assertEquals(ISA.X86, resource.get_architecture())
 
     def test_obtain_resources_no_version_invalid_id(self):
         with self.assertRaises(Exception) as context:
             obtain_resource(resource_id="invalid-id",
                             resource_directory=self.get_resource_dir())
         self.assertTrue(
-            "Invalid Resource - ID not found in gem5 Resources"
+            "Resource with ID invalid-id not found."
             in str(context.exception)
         )
 
@@ -141,6 +150,8 @@ class TestObtainResourcesCheck(unittest.TestCase):
                             resource_directory=self.get_resource_dir(),
                             resource_version="3.0.0")
         self.assertTrue(
-            "Invalid Version - Version not found for resource test-binary-resource in gem5 Resources"
+            f"Resource test-binary-resource with version '3.0.0'"
+            " not found.\nResource versions can be found at: "
+            f"https://gem5vision.github.io/gem5-resources-website/resources/test-binary-resource/versions"
             in str(context.exception)
         )
