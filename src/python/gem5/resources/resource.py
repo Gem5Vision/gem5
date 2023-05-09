@@ -635,11 +635,10 @@ def obtain_resource(
         # the "resource.json" file. These should be replaced with their
         # respective specializations ASAP and this case removed.
         if (
-            "additional_metadata" in resource_json
-            and "root_partition" in resource_json["additional_metadata"]
+            "root_partition" in resource_json
         ):
             # In this case we should return a DiskImageResource.
-            root_partition = resource_json["additional_metadata"][
+            root_partition = resource_json[
                 "root_partition"
             ]
             return DiskImageResource(
