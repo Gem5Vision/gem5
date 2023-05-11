@@ -41,7 +41,7 @@ from tempfile import gettempdir
 from urllib.error import HTTPError
 from typing import List, Dict, Set, Optional
 
-from .api.client_wrapper import get_resource_obj
+from python.gem5.resources.api.client_wrapper import get_resource_obj
 from .md5_utils import md5_file, md5_dir
 from ..utils.progress_bar import tqdm, progress_hook
 

@@ -2,9 +2,9 @@ import os
 import unittest
 from unittest import mock
 from unittest.mock import patch
-from . import client_wrapper
-from .jsonclient import JSONClient
-from .mongoclient import MongoClient
+import python.gem5.resources.api.client_wrapper
+from python.gem5.resources.api.jsonclient import JSONClient
+from python.gem5.resources.api.mongoclient import MongoClient
 from _m5.core import gem5Version
 """ resource_id = "x86-ubuntu-18.04-img"
 version = "1.1.0"

@@ -26,14 +26,13 @@
 
 import unittest
 from gem5.isas import ISA
-from gem5.resources.api.client_wrapper import get_resource_obj
-from gem5.resources.api.client_wrapper import clients
+from python.gem5.resources.api.client_wrapper import get_resource_obj
+from python.gem5.resources.api.client_wrapper import clients
 from typing import Dict
 from unittest.mock import patch
 
-from gem5.resources.api.mongoclient import MongoClient
-from gem5.resources.api.jsonclient import JSONClient
-from gem5.resources.resource import BinaryResource
+from python.gem5.resources.api.mongoclient import MongoClient
+from python.gem5.resources.api.jsonclient import JSONClient
 
 
 mock_config = {
@@ -57,21 +56,20 @@ for resource in mock_config["resources"]:
         mock_clients[resource] = JSONClient(database["url"])
 
 
-@patch('src.python.gem5.resources.api.client_wrapper.config', mock_config)
-@patch('src.python.gem5.resources.api.client_wrapper.clients', mock_clients)
-@patch('src.python.m5.defines.gem5Version', "23.0")
+@patch('python.gem5.resources.api.client_wrapper.config', mock_config)
+@patch('python.gem5.resources.api.client_wrapper.clients', mock_clients)
 class ClientWrapperTestSuite(unittest.TestCase):
     def test_get_resource_obj(self):
         # Test that the resource object is correctly returned
         resource = "this-is-a-test-resource"
         resource = get_resource_obj(resource)
         self.assertEqual(resource["id"], "this-is-a-test-resource")
-        self.assertEqual(resource["resource_version"], "1.0.0")
+        self.assertEqual(resource["resource_version"], "2.0.0")
         self.assertEqual(resource["category"], "binary")
-        self.assertEqual(resource["description"], "This is a test resource")
+        self.assertEqual(resource["description"], "This is a test resource but double newer")
         self.assertEqual(
             resource["source_url"], "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest")
-        self.assertEqual(resource["architecture"], ISA.X86)
+        self.assertEqual(resource["architecture"], "X86")
 
     def test_get_resource_obj_invalid_database(self):
         # Test that an exception is raised when an invalid database is passed
@@ -94,4 +92,4 @@ class ClientWrapperTestSuite(unittest.TestCase):
         self.assertEqual(resource["description"], "This is a test resource")
         self.assertEqual(
             resource["source_url"], "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest")
-        self.assertEqual(resource["architecture"], ISA.X86)
+        self.assertEqual(resource["architecture"], "X86")
