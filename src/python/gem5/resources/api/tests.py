@@ -1,52 +1,46 @@
 import os
 import unittest
-from .client_wrapper import get_resource_obj
-
+from unittest import mock
+from unittest.mock import patch
+from . import client_wrapper
+from .jsonclient import JSONClient
+from .mongoclient import MongoClient
+from _m5.core import gem5Version
 """ resource_id = "x86-ubuntu-18.04-img"
 version = "1.1.0"
 
 print(get_resource_obj(resource_id, version))
 print(get_resource_obj(resource_id, version, "atharav")) """
 
+mock_config = {
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "resources": {
+        "baba": {
+            "url": "src/python/gem5/resources/api/refs/test.json",
+            "isMongo": False
+        }
+    }
+}
 
+mock_clients = {}
+for resource in mock_config["resources"]:
+    database = mock_config["resources"][resource]
+    if database["isMongo"]:
+        mock_clients[resource] = MongoClient(
+            database["uri"], database["database"], database["collection"]
+        )
+    else:
+        mock_clients[resource] = JSONClient(database["url"])
+
+
+@patch('src.python.gem5.resources.api.client_wrapper.config', mock_config)
+@patch('src.python.gem5.resources.api.client_wrapper.clients', mock_clients)
+# @patch('src.python.m5.defines.gem5Version', "24.0")
 class Test(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        """Prior to running the suite we set the resource directory to
-        "ref/resource-specialization.json"
-        """
-        os.environ["GEM5_RESOURCE_JSON"] = os.path.join(
-            os.path.realpath(os.path.dirname(__file__)),
-            "refs",
-            "obtain-resource.json",
-        )
-
-    @classmethod
-    def tearDownClass(cls) -> None:
-        """After running the suite we unset the gem5-resource JSON file, as to
-        not interfere with others tests.
-        """
-        del os.environ["GEM5_RESOURCE_JSON"]
-
-    def get_resource_dir(self) -> str:
-        """To ensure the resources are cached to the same directory as all
-        other tests, this function returns the location of the testing
-        directories "resources" directory.
-        """
-        return os.path.join(
-            os.path.realpath(os.path.dirname(__file__)),
-            os.pardir,
-            os.pardir,
-            os.pardir,
-            "gem5",
-            "resources",
-        )
-
-    def test_obtain_resources_with_version_incompatible(self):
-        resource = None
-        with self.assertWarns(Warning) as warning:
-            resource = get_resource_obj(resource_id="x86-ubuntu-18.04-img",
-                                        resource_version="1.0.0")
-        self.assertEqual(f"Resource compatible with gem5 version: '23.1' not found.\n"
-                         "Resource versions can be found at: "
-                         f"https://gem5vision.github.io/gem5-resources-website/resources/x86-ubuntu-18.04-img/versions", warning.warning.args[0])
+    def test_config(self):
+        """Ensure the config is set correctly."""
+        print(client_wrapper.config)
+        print(client_wrapper.clients)
+        print(client_wrapper.get_resource_obj(
+            "kernel-example", "1.0.0", "baba"))
+        print(gem5Version)

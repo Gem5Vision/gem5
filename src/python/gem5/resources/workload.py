@@ -167,9 +167,9 @@ class Workload(AbstractWorkload):
 
         ```json
         {
-            "type" : "workload",
-            "name" : "x86-ubuntu-18.04-echo-hello",
-            "documentation" : "Description of workload here",
+            "category" : "workload",
+            "id" : "x86-ubuntu-18.04-echo-hello",
+            "description" : "Description of workload here",
             "function" : "set_kernel_disk_workload",
             "resources" : {
                 "kernel" : "x86-linux-kernel-5.4.49",
@@ -217,5 +217,4 @@ class Workload(AbstractWorkload):
             for key in workload_json["additional_params"]:
                 assert isinstance(key, str)
                 params[key] = workload_json["additional_params"][key]
-
         super().__init__(function=func, parameters=params)

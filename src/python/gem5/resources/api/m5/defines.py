@@ -1,1 +1,1 @@
-gem5Version = "23.1"
+gem5Version = "23.0"
