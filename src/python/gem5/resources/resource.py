@@ -788,7 +788,7 @@ def Resource(
 
 
 _get_resource_json_type_map = {
-    "disk-image": DiskImageResource,
+    "diskimage": DiskImageResource,
     "binary": BinaryResource,
     "kernel": KernelResource,
     "checkpoint": CheckpointResource,

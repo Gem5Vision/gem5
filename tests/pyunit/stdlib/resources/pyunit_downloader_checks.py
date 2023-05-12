@@ -28,6 +28,7 @@ import unittest
 import tempfile
 import os
 from typing import Dict
+import json
 
 from gem5.resources.downloader import (
     _get_resources_json_at_path,
@@ -51,12 +52,7 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
                 "description": "This is a test resource",
                 "architecture": "X86",
                 "size": 13816,
-                "tags": [
-                    "asmtest",
-                    "testing",
-                    "riscv",
-                    "testing"
-                ],
+                "tags": ["asmtest", "testing", "riscv", "testing"],
                 "is_zipped": False,
                 "md5sum": "4e70a98b6976969deffff91eed17fba1",
                 "source": "src/asmtest",
@@ -66,10 +62,8 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
                 "author": [],
                 "source_url": "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
                 "resource_version": "1.0.0",
-                "gem5_versions": [
-                    "23.0"
-                ],
-                "example_usage": "get_resource(resource_name=\"rv64mi-p-sbreak\")"
+                "gem5_versions": ["23.0"],
+                "example_usage": 'get_resource(resource_name="rv64mi-p-sbreak")',
             },
             {
                 "category": "binary",
@@ -77,9 +71,7 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
                 "description": "This is a test resource but double newer",
                 "architecture": "X86",
                 "size": 13816,
-                "tags": [
-                    "asmtest"
-                ],
+                "tags": ["asmtest"],
                 "is_zipped": False,
                 "md5sum": "4e70a98b6976969deffff91eed17fba1",
                 "source": "src/asmtest",
@@ -89,10 +81,8 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
                 "author": [],
                 "source_url": "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
                 "resource_version": "2.0.0",
-                "gem5_versions": [
-                    "23.1"
-                ],
-                "example_usage": "get_resource(resource_name=\"rv64mi-p-sbreak\")"
+                "gem5_versions": ["23.1"],
+                "example_usage": 'get_resource(resource_name="rv64mi-p-sbreak")',
             },
             {
                 "category": "simpoint",
@@ -112,15 +102,13 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
                 "author": [],
                 "source_url": "",
                 "resource_version": "1.0.0",
-                "gem5_versions": [
-                    "23.0"
-                ],
+                "gem5_versions": ["23.0"],
                 "workload_name": "x86-print-this-15000-with-simpoints",
-                "example_usage": "get_resource(resource_name=\"x86-print-this-1500-simpoints\")",
+                "example_usage": 'get_resource(resource_name="x86-print-this-1500-simpoints")',
                 "workloads": [
                     "x86-print-this-15000-with-simpoints",
-                    "x86-print-this-15000-with-simpoints-and-checkpoint"
-                ]
+                    "x86-print-this-15000-with-simpoints-and-checkpoint",
+                ],
             },
             {
                 "category": "file",
@@ -140,19 +128,17 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
                 "author": [],
                 "source_url": "",
                 "resource_version": "0.2.0",
-                "gem5_versions": [
-                    "23.0"
-                ],
+                "gem5_versions": ["23.0"],
                 "workload_name": "x86-print-this-15000-with-simpoints",
-                "example_usage": "get_resource(resource_name=\"x86-print-this-1500-simpoints\")",
+                "example_usage": 'get_resource(resource_name="x86-print-this-1500-simpoints")',
                 "workloads": [
                     "x86-print-this-15000-with-simpoints",
-                    "x86-print-this-15000-with-simpoints-and-checkpoint"
-                ]
-            }
+                    "x86-print-this-15000-with-simpoints-and-checkpoint",
+                ],
+            },
         ]
         file = tempfile.NamedTemporaryFile(mode="w", delete=False)
-        file.write(file_contents)
+        file.write(json.dumps(file_contents))
         file.close()
         cls.file_path = file.name
 
