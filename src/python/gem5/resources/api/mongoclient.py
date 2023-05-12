@@ -1,18 +1,42 @@
-import pymongo
+# from pymongo.collection import Collection
 from .client import AbstractClient
+import requests
 
 
 class MongoClient(AbstractClient):
-    def __init__(self, uri, db, collection):
+    def __init__(self, config):
         """
         Initializes a connection to a MongoDB database.
         :param uri: The URI for connecting to the MongoDB server.
         :param db: The name of the database to connect to.
         :param collection: The name of the collection within the database.
         """
-        self.__client = pymongo.MongoClient(uri)
-        self.__db = self.__client[db]
-        self.__collection = self.__db[collection]
+        self.apiKey = config["apiKey"]
+        self.url = config["url"]
+        self.collection = config["collection"]
+        self.database = config["database"]
+        self.dataSource = config["dataSource"]
+        self.name = config["name"]
+
+    def get_token(self):
+        token = requests.post(
+            f"https://realm.mongodb.com/api/client/v2.0/app/{self.name}/auth/providers/api-key/login",
+            json={"key": self.apiKey},
+        )
+        return token.json()["access_token"]
+
+    def __get_resource_by_id(self, resource_id):
+        resources = requests.post(
+            f"{self.url}/action/find",
+            json={
+                "dataSource": self.dataSource,
+                "collection": self.collection,
+                "database": self.database,
+                "filter": {"id": resource_id},
+            },
+            headers={"Authorization": f"Bearer {self.get_token()}"},
+        )
+        return resources.json()["documents"]
 
     def get_resource_obj(self, resource_id, resource_version=None) -> dict:
         """
@@ -22,9 +46,7 @@ class MongoClient(AbstractClient):
         :return: The Resource as a Python dictionary.
         """
         # getting all the resources with the given ID from MongoDB
-        resources = list(
-            self.__collection.find({"id": resource_id}, {"_id": 0})
-        )
+        resources = list(self.__get_resource_by_id(resource_id))
         # if no resource with the given ID is found throw an Exception
         if len(resources) == 0:
             raise Exception(f"Resource with ID '{resource_id}' not found.")

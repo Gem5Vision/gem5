@@ -26,8 +26,10 @@
 
 import unittest
 from gem5.isas import ISA
-from python.gem5.resources.api.client_wrapper import get_resource_obj
-from python.gem5.resources.api.client_wrapper import clients
+from python.gem5.resources.api.client_wrapper import (
+    get_resource_obj,
+    create_clients,
+)
 from typing import Dict
 from unittest.mock import patch
 
@@ -35,30 +37,38 @@ from python.gem5.resources.api.mongoclient import MongoClient
 from python.gem5.resources.api.jsonclient import JSONClient
 
 
-mock_config = {
+mock_config_json = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
     "resources": {
         "baba": {
             "url": "tests/pyunit/stdlib/resources/refs/resources.json",
-            "isMongo": False
+            "isMongo": False,
         }
-    }
+    },
 }
 
-mock_clients = {}
-for resource in mock_config["resources"]:
-    database = mock_config["resources"][resource]
-    if database["isMongo"]:
-        mock_clients[resource] = MongoClient(
-            database["uri"], database["database"], database["collection"]
-        )
-    else:
-        mock_clients[resource] = JSONClient(database["url"])
+mock_config_mongo = {
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "resources": {
+        "gem5-resources": {
+            "dataSource": "gem5-vision",
+            "database": "gem5-vision",
+            "collection": "resources",
+            "url": "https://data.mongodb-api.com/app/data-ejhjf/endpoint/data/v1",
+            "name": "data-ejhjf",
+            "apiKey": "OIi5bAP7xxIGK782t8ZoiD2BkBGEzMdX3upChf9zdCxHSnMoiTnjI22Yw5kOSgy9",
+            "isMongo": True,
+        }
+    },
+}
 
 
-@patch('python.gem5.resources.api.client_wrapper.config', mock_config)
-@patch('python.gem5.resources.api.client_wrapper.clients', mock_clients)
 class ClientWrapperTestSuite(unittest.TestCase):
+    @patch("python.gem5.resources.api.client_wrapper.config", mock_config_json)
+    @patch(
+        "python.gem5.resources.api.client_wrapper.clients",
+        create_clients(mock_config_json),
+    )
     def test_get_resource_obj(self):
         # Test that the resource object is correctly returned
         resource = "this-is-a-test-resource"
@@ -66,11 +76,20 @@ class ClientWrapperTestSuite(unittest.TestCase):
         self.assertEqual(resource["id"], "this-is-a-test-resource")
         self.assertEqual(resource["resource_version"], "2.0.0")
         self.assertEqual(resource["category"], "binary")
-        self.assertEqual(resource["description"], "This is a test resource but double newer")
         self.assertEqual(
-            resource["source_url"], "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest")
+            resource["description"], "This is a test resource but double newer"
+        )
+        self.assertEqual(
+            resource["source_url"],
+            "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
+        )
         self.assertEqual(resource["architecture"], "X86")
 
+    @patch("python.gem5.resources.api.client_wrapper.config", mock_config_json)
+    @patch(
+        "python.gem5.resources.api.client_wrapper.clients",
+        create_clients(mock_config_json),
+    )
     def test_get_resource_obj_invalid_database(self):
         # Test that an exception is raised when an invalid database is passed
         resource_id = "test-id"
@@ -78,18 +97,50 @@ class ClientWrapperTestSuite(unittest.TestCase):
         with self.assertRaises(Exception) as context:
             get_resource_obj(resource_id, database=database)
         self.assertTrue(
-            f"Datbase: {database} does not exist" in str(context.exception))
+            f"Database: {database} does not exist" in str(context.exception)
+        )
 
+    @patch("python.gem5.resources.api.client_wrapper.config", mock_config_json)
+    @patch(
+        "python.gem5.resources.api.client_wrapper.clients",
+        create_clients(mock_config_json),
+    )
     def test_get_resource_obj_with_version(self):
         # Test that the resource object is correctly returned
         resource_id = "this-is-a-test-resource"
         resource_version = "1.0.0"
         resource = get_resource_obj(
-            resource_id, resource_version=resource_version)
+            resource_id, resource_version=resource_version
+        )
         self.assertEqual(resource["id"], "this-is-a-test-resource")
         self.assertEqual(resource["resource_version"], "1.0.0")
         self.assertEqual(resource["category"], "binary")
         self.assertEqual(resource["description"], "This is a test resource")
         self.assertEqual(
-            resource["source_url"], "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest")
+            resource["source_url"],
+            "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
+        )
+        self.assertEqual(resource["architecture"], "X86")
+
+    @patch(
+        "python.gem5.resources.api.client_wrapper.config", mock_config_mongo
+    )
+    @patch(
+        "python.gem5.resources.api.client_wrapper.clients",
+        create_clients(mock_config_mongo),
+    )
+    def test_get_resource_obj(self):
+        resource = "x86-ubuntu-18.04-img"
+        resource = get_resource_obj(resource, database="gem5-resources")
+        self.assertEqual(resource["id"], "x86-ubuntu-18.04-img")
+        self.assertEqual(resource["resource_version"], "1.0.0")
+        self.assertEqual(resource["category"], "diskimage")
+        self.assertEqual(
+            resource["description"],
+            "A disk image containing Ubuntu 18.04 for x86. This image will run an `m5 readfile` instruction after booting. If no script file is specified an `m5 exit` instruction will be executed.",
+        )
+        self.assertEqual(
+            resource["source_url"],
+            "https://github.com/gem5/gem5-resources/tree/develop/src/x86-ubuntu",
+        )
         self.assertEqual(resource["architecture"], "X86")

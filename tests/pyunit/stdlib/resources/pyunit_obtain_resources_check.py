@@ -38,7 +38,7 @@ from gem5.resources.looppoint import (
 
 from gem5.isas import ISA
 
-from m5 import defines
+from _m5 import core
 
 
 
@@ -77,7 +77,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
 
     def test_obtain_resources_no_version(self):
         """Test that the resource loader returns latest version compatible with that version of gem5 when no version is specified."""
-        gem5Version = defines.gem5Version
+        gem5Version = core.gem5Version
         resource = obtain_resource(resource_id="test-binary-resource",
                                    resource_directory=self.get_resource_dir())
         self.assertEquals("2.0.0", resource.get_resource_version())
@@ -90,7 +90,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
         self.assertEquals(ISA.X86, resource.get_architecture())
 
     def test_obtain_resources_with_version_compatible(self):
-        gem5Version = defines.gem5Version
+        gem5Version = core.gem5Version
         resource = obtain_resource(resource_id="test-binary-resource",
                                    resource_directory=self.get_resource_dir(),
                                    resource_version="1.7.0")

@@ -37,7 +37,7 @@ from ..isas import ISA, get_isa_from_str
 
 from typing import Optional, Dict, Union, Type, Tuple, List
 
-from api.client_wrapper import get_resource_obj
+from python.gem5.resources.api.client_wrapper import get_resource_obj
 
 """
 Resources are items needed to run a simulation, such as a disk image, kernel,
