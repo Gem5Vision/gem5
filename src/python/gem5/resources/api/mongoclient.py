@@ -30,10 +30,7 @@ from typing import Optional, Dict, Union, Type, Tuple, List
 
 
 class MongoClient(AbstractClient):
-    def __init__(
-        self, 
-        config: Dict[str, str]
-    ):
+    def __init__(self, config: Dict[str, str]):
         """
         Initializes a connection to a MongoDB database.
         :param uri: The URI for connecting to the MongoDB server.
@@ -54,10 +51,7 @@ class MongoClient(AbstractClient):
         )
         return token.json()["access_token"]
 
-    def __get_resource_by_id(
-        self, 
-        resource_id: str
-    )-> List[Dict]:
+    def __get_resource_by_id(self, resource_id: str) -> List[Dict]:
         resources = requests.post(
             f"{self.url}/action/find",
             json={

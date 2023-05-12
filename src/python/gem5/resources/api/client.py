@@ -35,9 +35,7 @@ from typing import Optional, Dict, Union, Type, Tuple, List
 class AbstractClient(ABC):
     @abstractmethod
     def get_resource_obj(
-        self, 
-        resource_id: str, 
-        resource_version: Optional[str] = None
+        self, resource_id: str, resource_version: Optional[str] = None
     ) -> dict:
         """
         Retrieves the Resource object identified by the given resource ID.
@@ -48,10 +46,7 @@ class AbstractClient(ABC):
         """
         raise NotImplementedError
 
-    def _url_validator(
-        self, 
-        url: str
-    ) -> bool:
+    def _url_validator(self, url: str) -> bool:
         """
         Validates the provided URL.
         :param url: The URL to be validated.
@@ -63,11 +58,7 @@ class AbstractClient(ABC):
         except:
             return False
 
-    def _search_version(
-        self, 
-        resources: List, 
-        resource_version: str
-    ) -> dict:
+    def _search_version(self, resources: List, resource_version: str) -> dict:
         """
         Searches for the resource with the given version. If the resource is
         not found, an exception is thrown.
@@ -91,10 +82,7 @@ class AbstractClient(ABC):
             f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
         )
 
-    def _get_compatible_resources(
-        self,
-        resources: List
-    ) -> List:
+    def _get_compatible_resources(self, resources: List) -> List:
         """
         Returns a list of compatible resources with the given gem5 version.
         :param resources: A list of resources to filter.

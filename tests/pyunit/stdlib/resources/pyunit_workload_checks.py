@@ -44,7 +44,6 @@ class CustomWorkloadTestSuite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-
         os.environ["GEM5_RESOURCE_JSON"] = os.path.join(
             os.path.realpath(os.path.dirname(__file__)),
             "refs",
@@ -125,7 +124,6 @@ class WorkloadTestSuite(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-
         os.environ["GEM5_RESOURCE_JSON"] = os.path.join(
             os.path.realpath(os.path.dirname(__file__)),
             "refs",

@@ -36,6 +36,7 @@ from gem5.resources.downloader import (
 
 class ResourceDownloadTestSuite(unittest.TestCase):
     """Test cases for gem5.resources.downloader"""
+
     @classmethod
     def setUpClass(cls) -> str:
         pass

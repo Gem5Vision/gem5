@@ -32,10 +32,7 @@ from typing import Optional, Dict, Union, Type, Tuple, List
 
 
 class JSONClient(AbstractClient):
-    def __init__(
-        self, 
-        path: str
-    ):
+    def __init__(self, path: str):
         """
         Initializes a JSON database.
         :param path: The path to the Resource, either URL or local.
@@ -53,9 +50,7 @@ class JSONClient(AbstractClient):
             self.resources = requests.get(self.path).json()
 
     def get_resource_obj(
-        self, 
-        resource_id: str, 
-        resource_version: Optional[str] = None
+        self, resource_id: str, resource_version: Optional[str] = None
     ) -> Dict[str, Union[str, Dict[str, str], List[str]]]:
         """
         :param resource_id: The ID of the Resource.
