@@ -37,7 +37,27 @@ from gem5.resources.looppoint import (
 
 from gem5.isas import ISA
 
+from python.gem5.resources.api.client_wrapper import (
+    create_clients,
+)
+from unittest.mock import patch
 
+mock_config_json = {
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "resources": {
+        "baba": {
+            "url": "tests/pyunit/stdlib/resources/refs/resource-specialization.json",
+            "isMongo": False,
+        }
+    },
+}
+
+
+@patch("python.gem5.resources.api.client_wrapper.config", mock_config_json)
+@patch(
+    "python.gem5.resources.api.client_wrapper.clients",
+    create_clients(mock_config_json),
+)
 class ResourceSpecializationSuite(unittest.TestCase):
     """This suite tests that `gem5.resource.resource` casts to the correct
     `AbstractResource` specialization when using the `obtain_resource`
@@ -80,7 +100,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of of a BinaryResource"""
         resource = obtain_resource(
             resource_id="binary-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, BinaryResource)
@@ -95,7 +115,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a KernelResource."""
         resource = obtain_resource(
             resource_id="kernel-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, KernelResource)
@@ -110,7 +130,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a BootloaderResource."""
         resource = obtain_resource(
             resource_id="bootloader-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, BootloaderResource)
@@ -125,8 +145,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a DiskImageResource."""
         resource = obtain_resource(
             resource_id="disk-image-example",
-            resource_directory=self.get_resource_dir()
-  
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, DiskImageResource)
@@ -141,7 +160,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a CheckpointResource."""
         resource = obtain_resource(
             resource_id="checkpoint-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, CheckpointResource)
@@ -155,7 +174,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a GitResource."""
         resource = obtain_resource(
             resource_id="git-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, GitResource)
@@ -167,7 +186,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a Simpoint directory resource."""
         resource = obtain_resource(
             resource_id="simpoint-directory-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, SimpointDirectoryResource)
@@ -201,7 +220,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a Simpoint resource."""
         resource = obtain_resource(
             resource_id="simpoint-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, SimpointResource)
@@ -234,7 +253,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
         """Tests the loading of a DirectoryResource."""
         resource = obtain_resource(
             resource_id="directory-example",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, DirectoryResource)
@@ -250,7 +269,7 @@ class ResourceSpecializationSuite(unittest.TestCase):
 
         resource = obtain_resource(
             resource_id="looppoint-pinpoint-csv-resource",
-            resource_directory=self.get_resource_dir()
+            resource_directory=self.get_resource_dir(),
         )
 
         self.assertIsInstance(resource, LooppointCsvResource)

@@ -33,9 +33,6 @@ from python.gem5.resources.api.client_wrapper import (
 from typing import Dict
 from unittest.mock import patch
 
-from python.gem5.resources.api.mongoclient import MongoClient
-from python.gem5.resources.api.jsonclient import JSONClient
-
 
 mock_config_json = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
