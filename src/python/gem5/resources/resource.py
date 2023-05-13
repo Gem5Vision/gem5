@@ -641,7 +641,7 @@ def obtain_resource(
             return DiskImageResource(
                 local_path=to_path,
                 root_partition=root_partition,
-                resource_version=resource_version,
+                **resource_json,
             )
         return CustomResource(local_path=to_path)
 

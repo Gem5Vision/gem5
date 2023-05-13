@@ -44,8 +44,15 @@ def create_clients(
     return clients
 
 
-# read gem5/configs/gem5Resources.config.json
-config = json.load(open("configs/gem5Resources.config.json", "r"))
+# read gem5/configs/gem5Resources.config.json using pathlib
+config = json.load(
+    open(
+        Path(__file__).parent.parent.parent.parent.parent.parent.parent
+        / "configs/gem5Resources.config.json",
+        "r",
+    )
+)
+
 clients = create_clients(config)
 
 

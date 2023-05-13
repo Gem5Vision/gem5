@@ -26,6 +26,7 @@
 
 from .downloader import get_workload_json_obj
 from .resource import obtain_resource
+from python.gem5.resources.api.client_wrapper import get_resource_obj
 
 from typing import Dict, Any, Optional
 
@@ -155,7 +156,11 @@ class Workload(AbstractWorkload):
     """
 
     def __init__(
-        self, workload_name: str, resource_directory: Optional[str] = None
+        self,
+        workload_name: str,
+        resource_directory: Optional[str] = None,
+        resource_version: Optional[str] = None,
+        database: Optional[str] = None,
     ) -> None:
         """
         This constructor will load the workload details from the workload with
@@ -198,7 +203,10 @@ class Workload(AbstractWorkload):
         any resources should be download and accessed from. If None, a default
         location will be used. None by default.
         """
-        workload_json = get_workload_json_obj(workload_name=workload_name)
+
+        workload_json = get_resource_obj(
+            workload_name, resource_version=resource_version, database=database
+        )
 
         func = workload_json["function"]
         assert isinstance(func, str)

@@ -59,6 +59,25 @@ mock_config_mongo = {
     },
 }
 
+mock_config_combined = {
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "resources": {
+        "gem5-resources": {
+            "dataSource": "gem5-vision",
+            "database": "gem5-vision",
+            "collection": "resources",
+            "url": "https://data.mongodb-api.com/app/data-ejhjf/endpoint/data/v1",
+            "name": "data-ejhjf",
+            "apiKey": "OIi5bAP7xxIGK782t8ZoiD2BkBGEzMdX3upChf9zdCxHSnMoiTnjI22Yw5kOSgy9",
+            "isMongo": True,
+        },
+        "baba": {
+            "url": "tests/pyunit/stdlib/resources/refs/resources.json",
+            "isMongo": False,
+        },
+    },
+}
+
 mock_json = {}
 
 with open("tests/pyunit/stdlib/resources/refs/mongo_mock.json", "r") as f:
@@ -265,3 +284,46 @@ class ClientWrapperTestSuite(unittest.TestCase):
             f"https://gem5vision.github.io/gem5-resources-website/resources/this-is-a-test-resource/versions"
             in str(context.exception)
         )
+
+    @patch(
+        "python.gem5.resources.api.client_wrapper.config", mock_config_combined
+    )
+    @patch(
+        "python.gem5.resources.api.client_wrapper.clients",
+        create_clients(mock_config_combined),
+    )
+    @patch("requests.post", side_effect=mocked_requests_post)
+    def test_get_resource_obj_combine(self, mock_get):
+        resource_id_mongo = "x86-ubuntu-18.04-img"
+        resource_version_mongo = "1.0.0"
+        resource_id_json = "this-is-a-test-resource"
+        resource_version_json = "1.0.0"
+        resource_mongo = get_resource_obj(
+            resource_id_mongo,
+            resource_version=resource_version_mongo,
+            database="gem5-resources",
+        )
+        resource_json = get_resource_obj(
+            resource_id_json,
+            resource_version=resource_version_json,
+            database="baba"
+        )
+        self.assertEqual(resource_mongo["id"], "x86-ubuntu-18.04-img")
+        self.assertEqual(resource_mongo["resource_version"], "1.0.0")
+        self.assertEqual(resource_mongo["category"], "diskimage")
+        self.assertEqual(resource_mongo["description"], "This is a test resource")
+        self.assertEqual(
+            resource_mongo["source_url"],
+            "https://github.com/gem5/gem5-resources/tree/develop/src/x86-ubuntu",
+        )
+        self.assertEqual(resource_mongo["architecture"], "X86")
+
+        self.assertEqual(resource_json["id"], "this-is-a-test-resource")
+        self.assertEqual(resource_json["resource_version"], "1.0.0")
+        self.assertEqual(resource_json["category"], "binary")
+        self.assertEqual(resource_json["description"], "This is a test resource")
+        self.assertEqual(
+            resource_json["source_url"],
+            "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
+        )
+        self.assertEqual(resource_json["architecture"], "X86")
