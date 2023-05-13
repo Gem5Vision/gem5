@@ -306,12 +306,14 @@ class ClientWrapperTestSuite(unittest.TestCase):
         resource_json = get_resource_obj(
             resource_id_json,
             resource_version=resource_version_json,
-            database="baba"
+            database="baba",
         )
         self.assertEqual(resource_mongo["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource_mongo["resource_version"], "1.0.0")
         self.assertEqual(resource_mongo["category"], "diskimage")
-        self.assertEqual(resource_mongo["description"], "This is a test resource")
+        self.assertEqual(
+            resource_mongo["description"], "This is a test resource"
+        )
         self.assertEqual(
             resource_mongo["source_url"],
             "https://github.com/gem5/gem5-resources/tree/develop/src/x86-ubuntu",
@@ -321,7 +323,9 @@ class ClientWrapperTestSuite(unittest.TestCase):
         self.assertEqual(resource_json["id"], "this-is-a-test-resource")
         self.assertEqual(resource_json["resource_version"], "1.0.0")
         self.assertEqual(resource_json["category"], "binary")
-        self.assertEqual(resource_json["description"], "This is a test resource")
+        self.assertEqual(
+            resource_json["description"], "This is a test resource"
+        )
         self.assertEqual(
             resource_json["source_url"],
             "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
