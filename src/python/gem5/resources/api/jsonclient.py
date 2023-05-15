@@ -28,7 +28,7 @@ import json
 from pathlib import Path
 import requests
 from .client import AbstractClient
-from typing import Optional, Dict, Union, Type, Tuple, List
+from typing import Optional, Dict, Union, Type, Tuple, List, Any
 
 
 class JSONClient(AbstractClient):
@@ -49,29 +49,24 @@ class JSONClient(AbstractClient):
         else:
             self.resources = requests.get(self.path).json()
 
-    def get_resource_obj(
+    def get_resource_obj_from_client(
         self, resource_id: str, resource_version: Optional[str] = None
-    ) -> Dict[str, Union[str, Dict[str, str], List[str]]]:
+    ) -> Dict[str, Any]:
         """
         :param resource_id: The ID of the Resource.
         :optional param resource_version: The version of the Resource.
         If not given, the latest version compatible with current gem5 version is returned.
         :return: The Resource as a Python dictionary.
         """
-        # getting all the resources with the given id from MongoDB
+        # getting all the resources with the given id from the dictionary
         resources = [
-            resource
-            for resource in self.resources
-            if resource["id"] == resource_id
+            resource for resource in self.resources if resource["id"] == resource_id
         ]
         # if no resource with the given id is found throw an exception
         if len(resources) == 0:
             raise Exception(f"Resource with ID '{resource_id}' not found.")
         # sorting the resources by version
-        resources.sort(
-            key=lambda x: list(map(int, x["resource_version"].split("."))),
-            reverse=True,
-        )
+        resources = self._sort_resources_by_version(resources)
 
         # if a version is given, search for the resource with the given version
         if resource_version:

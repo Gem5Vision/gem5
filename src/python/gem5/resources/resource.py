@@ -28,7 +28,6 @@ from abc import ABCMeta
 import os
 from pathlib import Path
 
-# from m5.util import warn, fatal
 from m5.util import warn, fatal
 
 from .downloader import get_resource, get_resources_json_obj
@@ -38,7 +37,7 @@ from ..isas import ISA, get_isa_from_str
 
 from typing import Optional, Dict, Union, Type, Tuple, List
 
-from python.gem5.resources.api.client_wrapper import get_resource_obj
+from python.gem5.resources.api.client_wrapper import get_resource_obj, create_clients
 
 """
 Resources are items needed to run a simulation, such as a disk image, kernel,
@@ -84,12 +83,13 @@ class AbstractResource:
         :param source: The source (as in "source code") for this resource. This
         string should navigate users to where the source for this resource
         may be found. Not a required parameter. By default is None.
+        :param resource_version: Version of the resource itself.
+        Not a required parameter. By default is 1.0.0
         """
 
         if local_path and not os.path.exists(local_path):
             raise Exception(
-                f"Local path specified for resource, '{local_path}', does not "
-                "exist."
+                f"Local path specified for resource, '{local_path}', does not " "exist."
             )
 
         self._local_path = local_path
@@ -579,16 +579,20 @@ def obtain_resource(
     have the correct md5 value, the resoruce will be deleted and
     re-downloaded if this value is True. Otherwise an exception will be
     thrown. True by default.
+    :param resource_version: Version of the resource itself.
+    Not a required parameter. None by default.
+    :param database: Database from where the resource information should
+    be extracted. Not a required parameter. None by default.
     """
 
-    # Obtain the JSON resource entry for this resource
-    resource_json = get_resource_obj(
+    # Obtain the resource object entry for this resource
+    resource_obj = get_resource_obj(
         resource_id, resource_version=resource_version, database=database
     )
 
     to_path = None
     # If the "url" field is specified, the resoruce must be downloaded.
-    if "url" in resource_json and resource_json["url"]:
+    if "url" in resource_obj and resource_obj["url"]:
         # If the `resource_directory` parameter is not set via this function, we
         # check the "GEM5_RESOURCE_DIR" environment variable. If this too is not
         # set we call `_get_default_resource_dir()` to determine where the
@@ -603,9 +607,7 @@ def obtain_resource(
             if not os.path.isdir(resource_directory):
                 raise Exception(
                     "gem5 resource directory, "
-                    "'{}', exists but is not a directory".format(
-                        resource_directory
-                    )
+                    "'{}', exists but is not a directory".format(resource_directory)
                 )
         else:
             # `exist_ok=True` here as, occasionally, if multiple instance of
@@ -629,19 +631,19 @@ def obtain_resource(
 
     # Obtain the type from the JSON. From this we will determine what subclass
     # of `AbstractResource` we are to create and return.
-    resources_category = resource_json["category"]
+    resources_category = resource_obj["category"]
 
     if resources_category == "resource":
         # This is a stop-gap measure to ensure to work with older versions of
         # the "resource.json" file. These should be replaced with their
         # respective specializations ASAP and this case removed.
-        if "root_partition" in resource_json:
+        if "root_partition" in resource_obj:
             # In this case we should return a DiskImageResource.
-            root_partition = resource_json["root_partition"]
+            root_partition = resource_obj["root_partition"]
             return DiskImageResource(
                 local_path=to_path,
                 root_partition=root_partition,
-                **resource_json,
+                **resource_obj,
             )
         return CustomResource(local_path=to_path)
 
@@ -651,7 +653,7 @@ def obtain_resource(
     # Once we know what AbstractResource subclass we are using, we create it.
     # The fields in the JSON object are assumed to map like-for-like to the
     # subclass contructor, so we can pass the resource_json map directly.
-    return resource_class(local_path=to_path, **resource_json)
+    return resource_class(local_path=to_path, **resource_obj)
 
 
 def _get_default_resource_dir() -> str:
@@ -738,6 +740,8 @@ class CustomDiskImageResource(DiskImageResource):
         :param root_partition: The root disk partition to use.
         :param metadata: Metadata for the resource. **Warning:** As of "
         "v22.1.1, this parameter is not used.
+        :param resource_version: Version of the resource itself.
+        Not a required parameter. By default is 1.0.0
         """
         warn(
             "The `CustomDiskImageResource` class is deprecated. Please use "
@@ -788,7 +792,7 @@ def Resource(
 
 
 _get_resource_json_type_map = {
-    "diskimage": DiskImageResource,
+    "disk_image": DiskImageResource,
     "binary": BinaryResource,
     "kernel": KernelResource,
     "checkpoint": CheckpointResource,

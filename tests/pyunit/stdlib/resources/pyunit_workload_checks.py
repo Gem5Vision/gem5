@@ -36,7 +36,7 @@ from gem5.resources.resource import (
 
 from typing import Dict
 
-from python.gem5.resources.api.client_wrapper import create_clients, clients
+from python.gem5.resources.api.client_wrapper import create_clients
 from unittest.mock import patch
 
 mock_config_json1 = {

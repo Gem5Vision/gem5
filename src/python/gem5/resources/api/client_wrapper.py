@@ -34,6 +34,11 @@ from typing import Optional, Dict, Union, Type, Tuple, List
 def create_clients(
     config: dict,
 ):
+    """
+    This function creates respective client object for each database in the config file according to the type of database.
+    Params: config: config file containing the database information
+    Returns: clients: dictionary of clients for each database
+    """
     clients = {}
     for resource in config["resources"]:
         database = config["resources"][resource]
@@ -44,16 +49,20 @@ def create_clients(
     return clients
 
 
-# read gem5/configs/gem5Resources.config.json using pathlib
-config = json.load(
-    open(
-        Path(__file__).parent.parent.parent.parent.parent.parent.parent
-        / "configs/gem5Resources.config.json",
-        "r",
-    )
-)
+clients = None
 
-clients = create_clients(config)
+
+if clients is None:
+    # read gem5/configs/gem5Resources.config.json using pathlib
+    # gem5Resources.config.json contains the database information
+    config = json.load(
+        open(
+            Path(__file__).parent.parent.parent.parent.parent.parent.parent
+            / "configs/gem5Resources.config.json",
+            "r",
+        )
+    )
+    clients = create_clients(config)
 
 
 def get_resource_obj(
@@ -61,8 +70,16 @@ def get_resource_obj(
     resource_version: Optional[str] = None,
     database: Optional[str] = None,
 ) -> dict:
+    """
+    This function returns the resource object from the corresponding database.
+
+    :param resource_id: resource id of the resource
+    :optional param resource_version: resource version of the resource
+    :optional param database: database name. If not provided, the first database in the config file is used
+    :return: resource object
+    """
     if not database:
         database = list(clients.keys())[0]
     if database not in clients:
         raise Exception(f"Database: {database} does not exist")
-    return clients[database].get_resource_obj(resource_id, resource_version)
+    return clients[database].get_resource_obj_from_client(resource_id, resource_version)

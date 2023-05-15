@@ -118,9 +118,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
         self.assertEquals("1.7.0", resource.get_resource_version())
         self.assertIsInstance(resource, BinaryResource)
         # self.assertIn(gem5Version, resource.get_gem5_versions())
-        self.assertEquals(
-            "test description v1.7.0", resource.get_description()
-        )
+        self.assertEquals("test description v1.7.0", resource.get_description())
         self.assertEquals("src/test-source", resource.get_source())
         self.assertEquals(ISA.ARM, resource.get_architecture())
 
@@ -132,6 +130,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_directory=self.get_resource_dir(),
                 resource_version="1.5.0",
             )
+        print(warning.warning.args[0])
         self.assertTrue(
             f"Resource compatible with gem5 version: '{core.gem5Version}' not found.\n"
             "Resource versions can be found at: "
@@ -146,9 +145,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
         )
         self.assertEquals("1.5.0", resource.get_resource_version())
         self.assertIsInstance(resource, BinaryResource)
-        self.assertEquals(
-            "test description for 1.5.0", resource.get_description()
-        )
+        self.assertEquals("test description for 1.5.0", resource.get_description())
         self.assertEquals("src/test-source", resource.get_source())
         self.assertEquals(ISA.ARM, resource.get_architecture())
 
@@ -159,8 +156,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_directory=self.get_resource_dir(),
             )
         self.assertTrue(
-            "Resource with ID 'invalid-id' not found."
-            in str(context.exception)
+            "Resource with ID 'invalid-id' not found." in str(context.exception)
         )
 
     def test_obtain_resources_with_version_invalid_id(self):
@@ -171,8 +167,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_version="1.7.0",
             )
         self.assertTrue(
-            "Resource with ID 'invalid-id' not found."
-            in str(context.exception)
+            "Resource with ID 'invalid-id' not found." in str(context.exception)
         )
 
     def test_obtain_resources_with_version_invalid_version(self):

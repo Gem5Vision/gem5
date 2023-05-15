@@ -186,7 +186,7 @@ class ClientWrapperTestSuite(unittest.TestCase):
         resource = get_resource_obj(resource, database="gem5-resources")
         self.assertEqual(resource["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource["resource_version"], "2.0.0")
-        self.assertEqual(resource["category"], "diskimage")
+        self.assertEqual(resource["category"], "disk_image")
         self.assertEqual(
             resource["description"],
             "A disk image containing Ubuntu 18.04 for x86. This image will run an `m5 readfile` instruction after booting. If no script file is specified an `m5 exit` instruction will be executed.",
@@ -216,7 +216,7 @@ class ClientWrapperTestSuite(unittest.TestCase):
         )
         self.assertEqual(resource["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource["resource_version"], "1.0.0")
-        self.assertEqual(resource["category"], "diskimage")
+        self.assertEqual(resource["category"], "disk_image")
         self.assertEqual(resource["description"], "This is a test resource")
         self.assertEqual(
             resource["source_url"],
@@ -310,7 +310,7 @@ class ClientWrapperTestSuite(unittest.TestCase):
         )
         self.assertEqual(resource_mongo["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource_mongo["resource_version"], "1.0.0")
-        self.assertEqual(resource_mongo["category"], "diskimage")
+        self.assertEqual(resource_mongo["category"], "disk_image")
         self.assertEqual(
             resource_mongo["description"], "This is a test resource"
         )

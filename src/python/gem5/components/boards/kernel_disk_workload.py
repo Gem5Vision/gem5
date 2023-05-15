@@ -94,19 +94,19 @@ class KernelDiskWorkload:
         raise NotImplementedError
 
     @abstractmethod
-    def _add_disk_to_board(self, diskimage: DiskImageResource) -> None:
+    def _add_disk_to_board(self, disk_image: DiskImageResource) -> None:
         """
         Sets the configuration needed to add the disk image to the board.
 
         **Note:** This will be executed at the end of the
         `set_kernel_disk_workload` function.
 
-        :param diskimage: The disk image to add to the system.
+        :param disk_image: The disk image to add to the system.
         """
         raise NotImplementedError
 
     def get_disk_root_partition(
-        cls, diskimage: DiskImageResource
+        cls, disk_image: DiskImageResource
     ) -> Optional[str]:
         """
         Obtains the root partition of a disk image by inspecting the resource's
@@ -114,10 +114,10 @@ class KernelDiskWorkload:
 
         :returns: The disk image's root partition.
         """
-        return diskimage.get_root_partition()
+        return disk_image.get_root_partition()
 
     def get_default_kernel_root_val(
-        self, diskimage: DiskImageResource
+        self, disk_image: DiskImageResource
     ) -> str:
         """
         Get the default kernel root value to be passed to the kernel. This is
@@ -126,18 +126,18 @@ class KernelDiskWorkload:
         `get_disk_root_partition()`
 
 
-        :param diskimage: The disk image to be added to the system.
+        :param disk_image: The disk image to be added to the system.
         :returns: The default value for the 'root' argument to be passed to the
         kernel.
         """
         return self.get_disk_device() + (
-            self.get_disk_root_partition(diskimage) or ""
+            self.get_disk_root_partition(disk_image) or ""
         )
 
     def set_kernel_disk_workload(
         self,
         kernel: KernelResource,
-        diskimage: DiskImageResource,
+        disk_image: DiskImageResource,
         bootloader: Optional[BootloaderResource] = None,
         readfile: Optional[str] = None,
         readfile_contents: Optional[str] = None,
@@ -150,7 +150,7 @@ class KernelDiskWorkload:
         and a disk image.
 
         :param kernel: The kernel to boot.
-        :param diskimage: The disk image to mount.
+        :param disk_image: The disk image to mount.
         :param bootloader: The current implementation of the ARM board requires
         three resources to operate -- kernel, disk image, and, a bootloader.
         :param readfile: An optional parameter stating the file to be read by
@@ -182,7 +182,7 @@ class KernelDiskWorkload:
         self.workload.command_line = (
             " ".join(kernel_args or self.get_default_kernel_args())
         ).format(
-            root_value=self.get_default_kernel_root_val(diskimage=diskimage)
+            root_value=self.get_default_kernel_root_val(disk_image=disk_image)
         )
 
         # Setting the bootloader information for ARM board. The current
@@ -204,7 +204,7 @@ class KernelDiskWorkload:
             file.write(readfile_contents)
             file.close()
 
-        self._add_disk_to_board(diskimage=diskimage)
+        self._add_disk_to_board(disk_image=disk_image)
 
         # Set whether to exit on work items.
         self.exit_on_work_items = exit_on_work_items

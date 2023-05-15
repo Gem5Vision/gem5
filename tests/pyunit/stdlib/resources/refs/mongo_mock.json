@@ -1,6 +1,6 @@
 [
     {
-        "category": "diskimage",
+        "category": "disk_image",
         "id": "x86-ubuntu-18.04-img",
         "description": "This is a test resource",
         "architecture": "X86",
@@ -27,7 +27,7 @@
         "example_usage": "get_resource(resource_name=\"x86-ubuntu-18.04-img\")"
     },
     {
-        "category": "diskimage",
+        "category": "disk_image",
         "id": "x86-ubuntu-18.04-img",
         "description": "A disk image containing Ubuntu 18.04 for x86. This image will run an `m5 readfile` instruction after booting. If no script file is specified an `m5 exit` instruction will be executed.",
         "architecture": "X86",

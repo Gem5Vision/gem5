@@ -30,11 +30,12 @@ import urllib.parse
 from _m5 import core
 import warnings
 from typing import Optional, Dict, Union, Type, Tuple, List
+from distutils.version import StrictVersion
 
 
 class AbstractClient(ABC):
     @abstractmethod
-    def get_resource_obj(
+    def get_resource_obj_from_client(
         self, resource_id: str, resource_version: Optional[str] = None
     ) -> dict:
         """
@@ -67,20 +68,31 @@ class AbstractClient(ABC):
         :return: The resource object as a Python dictionary if found.
         :raises: RuntimeError if the resource with the specified version is not found.
         """
-        for resource in resources:
-            if resource["resource_version"] == resource_version:
-                if core.gem5Version not in resource["gem5_versions"]:
-                    warnings.warn(
-                        f"Resource compatible with gem5 version: '{core.gem5Version}' not found.\n"
-                        "Resource versions can be found at: "
-                        f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
-                    )
-                return resource
-        raise Exception(
-            f"Resource {resources[0]['id']} with version '{resource_version}'"
-            " not found.\nResource versions can be found at: "
-            f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
+        resource = next(
+            iter(
+                [
+                    resource
+                    for resource in resources
+                    if resource["resource_version"] == resource_version
+                ]
+            ),
+            None,
         )
+        if resource is None:
+            raise Exception(
+                f"Resource {resources[0]['id']} with version '{resource_version}'"
+                " not found.\nResource versions can be found at: "
+                f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
+            )
+        if core.gem5Version not in resource["gem5_versions"]:
+            warnings.warn(
+                "Resource compatible with gem5 version: "
+                f"'{core.gem5Version}' not found.\n"
+                "Resource versions can be found at: "
+                "https://gem5vision.github.io/gem5-resources-website"
+                f"/resources/{resources[0]['id']}/versions"
+            )
+        return resource
 
     def _get_compatible_resources(self, resources: List) -> List:
         """
@@ -90,12 +102,15 @@ class AbstractClient(ABC):
         If no compatible resources are found, the original list of resources
         is returned.
         """
-        compatible_resources = []
-        for resource in resources:
-            if core.gem5Version in resource["gem5_versions"]:
-                compatible_resources.append(resource)
+        compatible_resources = [
+            resource
+            for resource in resources
+            if core.gem5Version in resource["gem5_versions"]
+        ]
 
         if len(compatible_resources) == 0:
+            # if there are no compatible resources, return the original list
+            # which contains all the versions of the resource
             warnings.warn(
                 f"Resource compatible with gem5 version: '{core.gem5Version}' not found.\n"
                 "Resource versions can be found at: "
@@ -103,3 +118,15 @@ class AbstractClient(ABC):
             )
             return resources
         return compatible_resources
+
+    def _sort_resources_by_version(self, resources: List) -> List:
+        """
+        Sorts the resources by version in descending order.
+        :param resources: A list of resources to sort.
+        :return: A list of sorted resources.
+        """
+        return sorted(
+            resources,
+            key=lambda resource: StrictVersion(resource["resource_version"]),
+            reverse=True,
+        )

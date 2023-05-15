@@ -14,7 +14,7 @@
         ]
     },
     {
-        "category": "diskimage",
+        "category": "disk_image",
         "id": "disk-image-example",
         "description": "disk-image documentation.",
         "architecture": "X86",

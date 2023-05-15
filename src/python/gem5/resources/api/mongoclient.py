@@ -64,7 +64,7 @@ class MongoClient(AbstractClient):
         )
         return resources.json()["documents"]
 
-    def get_resource_obj(
+    def get_resource_obj_from_client(
         self,
         resource_id: str,
         resource_version: Optional[str] = None,
@@ -81,10 +81,7 @@ class MongoClient(AbstractClient):
         if len(resources) == 0:
             raise Exception(f"Resource with ID '{resource_id}' not found.")
         # sorting the resources by version
-        resources.sort(
-            key=lambda x: list(map(int, x["resource_version"].split("."))),
-            reverse=True,
-        )
+        resources = self._sort_resources_by_version(resources)
 
         # if a version is given, search for the resource with the given version
         if resource_version:
