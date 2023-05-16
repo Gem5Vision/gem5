@@ -432,7 +432,7 @@ def get_resource(
     # minutes.Most resources should be downloaded and decompressed in this
     # timeframe, even on the most constrained of systems.
     with FileLock(f"{to_path}.lock", timeout=900):
-        resource_json = get_resource_obj(
+        resource_obj = get_resource_obj(
             resource_name, resource_version=resource_version, database=database
         )
 
@@ -442,7 +442,7 @@ def get_resource(
             else:
                 md5 = md5_dir(Path(to_path))
 
-            if md5 == resource_json["md5sum"]:
+            if md5 == resource_obj["md5sum"]:
                 # In this case, the file has already been download, no need to
                 # do so again.
                 return
@@ -463,10 +463,10 @@ def get_resource(
         # string-based way of doing things. It can be refactored away over
         # time:
         # https://gem5-review.googlesource.com/c/public/gem5-resources/+/51168
-        if isinstance(resource_json["is_zipped"], str):
-            run_unzip = unzip and resource_json["is_zipped"].lower() == "true"
-        elif isinstance(resource_json["is_zipped"], bool):
-            run_unzip = unzip and resource_json["is_zipped"]
+        if isinstance(resource_obj["is_zipped"], str):
+            run_unzip = unzip and resource_obj["is_zipped"].lower() == "true"
+        elif isinstance(resource_obj["is_zipped"], bool):
+            run_unzip = unzip and resource_obj["is_zipped"]
         else:
             raise Exception(
                 "The resource.json entry for '{}' has a value for the "
@@ -477,8 +477,8 @@ def get_resource(
 
         run_tar_extract = (
             untar
-            and "is_tar_archive" in resource_json
-            and resource_json["is_tar_archive"]
+            and "is_tar_archive" in resource_obj
+            and resource_obj["is_tar_archive"]
         )
 
         tar_extension = ".tar"
@@ -498,7 +498,7 @@ def get_resource(
         )
 
         # Get the URL.
-        url = resource_json["url"]
+        url = resource_obj["url"]
 
         _download(url=url, download_to=download_dest)
         print(f"Finished downloading resource '{resource_name}'.")

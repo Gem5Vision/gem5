@@ -82,4 +82,6 @@ def get_resource_obj(
         database = list(clients.keys())[0]
     if database not in clients:
         raise Exception(f"Database: {database} does not exist")
-    return clients[database].get_resource_obj_from_client(resource_id, resource_version)
+    return clients[database].get_resource_obj_from_client(
+        resource_id, resource_version
+    )

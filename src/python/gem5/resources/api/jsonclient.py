@@ -60,7 +60,9 @@ class JSONClient(AbstractClient):
         """
         # getting all the resources with the given id from the dictionary
         resources = [
-            resource for resource in self.resources if resource["id"] == resource_id
+            resource
+            for resource in self.resources
+            if resource["id"] == resource_id
         ]
         # if no resource with the given id is found throw an exception
         if len(resources) == 0:
