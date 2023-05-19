@@ -31,6 +31,8 @@ from pathlib import Path
 from typing import Optional, Dict, List
 from .client_api.jsonclient import JSONClient
 from .client_api.mongoclient import MongoClient
+from python.gem5 import __file__
+import os
 
 
 def create_clients(
@@ -52,20 +54,27 @@ def create_clients(
 
 
 clients = None
-""" config_file_path = (
-    Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
-    / "src/python/gem5-config.json"
-) """
-config_file_path = (
-    Path("/home/paikunal/gem5Vision/gem5") / "src/python/gem5-config.json"
-)
 
+# First check if the config file path is provided in the environment variable
+if "GEM5_RESOURCES_CONFIG" in os.environ:
+    config_file_path = Path(os.environ["GEM5_RESOURCES_CONFIG"])
+# If not, check if the config file is present in the current directory
+elif (Path().resolve() / "gem5-config.json").exists():
+    config_file_path = Path().resolve() / "gem5-config.json"
+# If not, use the default config in the build directory
+else:
+    config_file_path = (
+        Path(__file__).resolve().parent.parent / "gem5-config.json"
+    )
+
+# If config file is found, load the config file
 if config_file_path.exists():
     with open(config_file_path, "r") as file:
         config = json.load(file)
 else:
-    config = {}
+    raise Exception(f"Config file not found at {config_file_path}")
 
+# If clients is not already created, create clients for each database
 if clients is None:
     clients = create_clients(config)
 
