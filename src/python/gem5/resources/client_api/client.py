@@ -55,21 +55,27 @@ class AbstractClient(ABC):
         """
         # getting all the resources with the given id from the dictionary
         resources = self.get_resources_by_id(resource_id)
+
         # if no resource with the given id is found throw an exception
         if len(resources) == 0:
-            raise Exception(f"Resource with ID '{resource_id}' not found.")
+            return None
+
         # sorting the resources by version
         resources = self._sort_resources_by_version(resources)
 
         # if a version is given, search for the resource with the given version
         if resource_version:
-            return self._search_version(resources, resource_version)
+            return self._search_version_in_resources(
+                resources, resource_version
+            )
 
         # if no version is given, return the compatible
         # resource with the latest version
-        compatible_resources = self._get_compatible_resources(resources)
+        compatible_resources = (
+            self._get_resources_compatible_with_gem5_version(resources)
+        )
         if len(compatible_resources) == 0:
-            self.check_resource_version_compatibility(resources[0], resource_version)
+            self._check_resource_version_compatibility(resources[0])
             return resources[0]
         return compatible_resources[0]
 
@@ -85,7 +91,9 @@ class AbstractClient(ABC):
         except:
             return False
 
-    def _search_version(self, resources: List, resource_version: str = "1.0.0") -> dict:
+    def _search_version_in_resources(
+        self, resources: List, resource_version: str = "1.0.0"
+    ) -> dict:
         """
         Searches for the resource with the given version. If the resource is
         not found, an exception is thrown.
@@ -106,15 +114,13 @@ class AbstractClient(ABC):
             None,
         )
         if resource is None:
-            raise Exception(
-                f"Resource {resources[0]['id']} with version '{resource_version}'"
-                " not found.\nResource versions can be found at: "
-                f"https://gem5vision.github.io/gem5-resources-website/resources/{resources[0]['id']}/versions"
-            )
-        self.check_resource_version_compatibility(resource, resource_version)
+            return None
+        self._check_resource_version_compatibility(resource)
         return resource
 
-    def _get_compatible_resources(self, resources: List) -> List:
+    def _get_resources_compatible_with_gem5_version(
+        self, resources: List, gem5_version: str = core.gem5Version
+    ) -> List:
         """
         Returns a list of compatible resources with the current gem5 version.
         :param resources: A list of resources to filter.
@@ -125,7 +131,7 @@ class AbstractClient(ABC):
         compatible_resources = [
             resource
             for resource in resources
-            if core.gem5Version in resource["gem5_versions"]
+            if gem5_version in resource["gem5_versions"]
         ]
         return compatible_resources
 
@@ -137,17 +143,20 @@ class AbstractClient(ABC):
         """
         return sorted(
             resources,
-            key=lambda resource: StrictVersion(resource["resource_version"]),
+            key=lambda resource: (
+                resource["id"].lower(),
+                StrictVersion(resource["resource_version"]),
+            ),
             reverse=True,
         )
 
-    def check_resource_version_compatibility(
+    def _check_resource_version_compatibility(
         self, resource: dict, gem5_version: str = core.gem5Version
     ) -> bool:
         if gem5_version not in resource["gem5_versions"]:
             warnings.warn(
                 f"Resource {resource['id']} version {resource['resource_version']} "
-                f"is not known to be compatible with gem5 version {core.gem5Version}. "
+                f"is not known to be compatible with gem5 version {gem5_version}. "
                 "This may cause problems with your simulation. This resource's compatibility "
                 "with different gem5 versions can be found here:"
                 "https://gem5vision.github.io/gem5-resources-website"

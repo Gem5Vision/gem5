@@ -27,7 +27,7 @@
 from .resource import obtain_resource
 from .client_wrapper import get_resource_json_obj
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List, Optional
 
 
 class AbstractWorkload:
@@ -159,7 +159,7 @@ class Workload(AbstractWorkload):
         workload_name: str,
         resource_directory: Optional[str] = None,
         resource_version: Optional[str] = None,
-        database: Optional[str] = None,
+        databases: Optional[List] = [],
     ) -> None:
         """
         This constructor will load the workload details from the workload with
@@ -204,7 +204,9 @@ class Workload(AbstractWorkload):
         """
 
         workload_json = get_resource_json_obj(
-            workload_name, resource_version=resource_version, database=database
+            workload_name,
+            resource_version=resource_version,
+            databases=databases,
         )
 
         func = workload_json["function"]

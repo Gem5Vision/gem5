@@ -47,8 +47,10 @@ class MongoClient(AbstractClient):
         self.name = config["name"]
 
     def get_token(self):
-        url = f"https://realm.mongodb.com/api/client/v2.0/app/"
-        "{self.name}/auth/providers/api-key/login"
+        url = (
+            "https://realm.mongodb.com/api/client/v2.0/app/"
+            f"{self.name}/auth/providers/api-key/login"
+        )
         data = {"key": self.apiKey}
         data = json.dumps(data).encode("utf-8")
 

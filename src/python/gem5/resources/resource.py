@@ -559,7 +559,7 @@ def obtain_resource(
     resource_directory: Optional[str] = None,
     download_md5_mismatch: bool = True,
     resource_version: Optional[str] = None,
-    database: Optional[str] = None,
+    databases: Optional[List] = [],
 ) -> AbstractResource:
     """
     This function primarily serves as a factory for resources. It will return
@@ -587,7 +587,7 @@ def obtain_resource(
 
     # Obtain the resource object entry for this resource
     resource_obj = get_resource_json_obj(
-        resource_id, resource_version=resource_version, database=database
+        resource_id, resource_version=resource_version, databases=databases
     )
 
     to_path = None
@@ -628,7 +628,7 @@ def obtain_resource(
             to_path=os.path.join(resource_directory, resource_id),
             download_md5_mismatch=download_md5_mismatch,
             resource_version=resource_version,
-            database=database,
+            databases=databases,
         )
 
     # Obtain the type from the JSON. From this we will determine what subclass
@@ -789,7 +789,7 @@ def Resource(
         resource_directory=resource_directory,
         download_md5_mismatch=download_md5_mismatch,
         resource_version=resource_version,
-        database=database,
+        databases=database,
     )
 
 

@@ -26,7 +26,7 @@
 
 import unittest
 from gem5.isas import ISA
-from python.gem5.resources.client_wrapper import (
+from gem5.resources.client_wrapper import (
     get_resource_json_obj,
     create_clients,
 )
@@ -36,7 +36,7 @@ import json
 
 mock_config_json = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
-    "resources": {
+    "sources": {
         "baba": {
             "url": "tests/pyunit/stdlib/resources/refs/resources.json",
             "isMongo": False,
@@ -46,7 +46,7 @@ mock_config_json = {
 
 mock_config_mongo = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
-    "resources": {
+    "sources": {
         "gem5-resources": {
             "dataSource": "gem5-vision",
             "database": "gem5-vision",
@@ -61,7 +61,7 @@ mock_config_mongo = {
 
 mock_config_combined = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
-    "resources": {
+    "sources": {
         "gem5-resources": {
             "dataSource": "gem5-vision",
             "database": "gem5-vision",
@@ -85,19 +85,21 @@ with open("tests/pyunit/stdlib/resources/refs/mongo_mock.json", "r") as f:
 
 
 def mocked_requests_post(*args, **kwargs):
+    # mokcing urllib.request.urlopen
     class MockResponse:
         def __init__(self, json_data, status_code):
             self.json_data = json_data
             self.status_code = status_code
 
-        def json(self):
-            return self.json_data
+        def read(self):
+            return json.dumps(self.json_data).encode("utf-8")
 
-    if "/api-key/login" in args[0]:
+    data = json.loads(args[0].data)
+    if "/api-key/login" in args[0].full_url:
         return MockResponse({"access_token": "test-token"}, 200)
-    if "/action/find" in args[0]:
-        if "json" in kwargs:
-            if kwargs["json"]["filter"]["id"] == "invalid-id":
+    if "/action/find" in args[0].full_url:
+        if data:
+            if data["filter"]["id"] == "invalid-id":
                 return MockResponse(
                     {
                         "documents": [],
@@ -115,9 +117,9 @@ def mocked_requests_post(*args, **kwargs):
 
 
 class ClientWrapperTestSuite(unittest.TestCase):
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_json)
+    @patch("gem5.resources.client_wrapper.config", mock_config_json)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_json),
     )
     def test_get_resource_json_obj(self):
@@ -136,9 +138,9 @@ class ClientWrapperTestSuite(unittest.TestCase):
         )
         self.assertEqual(resource["architecture"], "X86")
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_json)
+    @patch("gem5.resources.client_wrapper.config", mock_config_json)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_json),
     )
     def test_get_resource_json_obj_invalid_database(self):
@@ -146,14 +148,14 @@ class ClientWrapperTestSuite(unittest.TestCase):
         resource_id = "test-id"
         database = "invalid"
         with self.assertRaises(Exception) as context:
-            get_resource_json_obj(resource_id, database=database)
+            get_resource_json_obj(resource_id, databases=[database])
         self.assertTrue(
             f"Database: {database} does not exist" in str(context.exception)
         )
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_json)
+    @patch("gem5.resources.client_wrapper.config", mock_config_json)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_json),
     )
     def test_get_resource_json_obj_with_version(self):
@@ -173,15 +175,17 @@ class ClientWrapperTestSuite(unittest.TestCase):
         )
         self.assertEqual(resource["architecture"], "X86")
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_mongo)
+    @patch("gem5.resources.client_wrapper.config", mock_config_mongo)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_mongo),
     )
-    @patch("requests.post", side_effect=mocked_requests_post)
+    @patch("urllib.request.urlopen", side_effect=mocked_requests_post)
     def test_get_resource_json_obj(self, mock_get):
         resource = "x86-ubuntu-18.04-img"
-        resource = get_resource_json_obj(resource, database="gem5-resources")
+        resource = get_resource_json_obj(
+            resource, databases=["gem5-resources"]
+        )
         self.assertEqual(resource["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource["resource_version"], "2.0.0")
         self.assertEqual(resource["category"], "disk_image")
@@ -195,12 +199,12 @@ class ClientWrapperTestSuite(unittest.TestCase):
         )
         self.assertEqual(resource["architecture"], "X86")
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_mongo)
+    @patch("gem5.resources.client_wrapper.config", mock_config_mongo)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_mongo),
     )
-    @patch("requests.post", side_effect=mocked_requests_post)
+    @patch("urllib.request.urlopen", side_effect=mocked_requests_post)
     def test_get_resource_json_obj_with_version_mongodb(self, mock_get):
         # Test that the resource object is correctly returned
         resource_id = "x86-ubuntu-18.04-img"
@@ -208,7 +212,7 @@ class ClientWrapperTestSuite(unittest.TestCase):
         resource = get_resource_json_obj(
             resource_id,
             resource_version=resource_version,
-            database="gem5-resources",
+            databases=["gem5-resources"],
         )
         self.assertEqual(resource["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource["resource_version"], "1.0.0")
@@ -220,27 +224,27 @@ class ClientWrapperTestSuite(unittest.TestCase):
         )
         self.assertEqual(resource["architecture"], "X86")
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_mongo)
+    @patch("gem5.resources.client_wrapper.config", mock_config_mongo)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_mongo),
     )
-    @patch("requests.post", side_effect=mocked_requests_post)
+    @patch("urllib.request.urlopen", side_effect=mocked_requests_post)
     def test_get_resource_json_obj_with_id_invalid_mongodb(self, mock_get):
         resource_id = "invalid-id"
         with self.assertRaises(Exception) as context:
-            get_resource_json_obj(resource_id, database="gem5-resources")
+            get_resource_json_obj(resource_id, databases=["gem5-resources"])
         self.assertTrue(
             "Resource with ID 'invalid-id' not found."
             in str(context.exception)
         )
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_mongo)
+    @patch("gem5.resources.client_wrapper.config", mock_config_mongo)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_mongo),
     )
-    @patch("requests.post", side_effect=mocked_requests_post)
+    @patch("urllib.request.urlopen", side_effect=mocked_requests_post)
     def test_get_resource_json_obj_with_version_invalid_mongodb(
         self, mock_get
     ):
@@ -250,7 +254,7 @@ class ClientWrapperTestSuite(unittest.TestCase):
             get_resource_json_obj(
                 resource_id,
                 resource_version=resource_version,
-                database="gem5-resources",
+                databases=["gem5-resources"],
             )
         self.assertTrue(
             f"Resource x86-ubuntu-18.04-img with version '2.5.0'"
@@ -259,9 +263,9 @@ class ClientWrapperTestSuite(unittest.TestCase):
             in str(context.exception)
         )
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_json)
+    @patch("gem5.resources.client_wrapper.config", mock_config_json)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_json),
     )
     def test_get_resource_json_obj_with_version_invalid_json(self):
@@ -279,12 +283,12 @@ class ClientWrapperTestSuite(unittest.TestCase):
             in str(context.exception)
         )
 
-    @patch("python.gem5.resources.client_wrapper.config", mock_config_combined)
+    @patch("gem5.resources.client_wrapper.config", mock_config_combined)
     @patch(
-        "python.gem5.resources.client_wrapper.clients",
+        "gem5.resources.client_wrapper.clients",
         create_clients(mock_config_combined),
     )
-    @patch("requests.post", side_effect=mocked_requests_post)
+    @patch("urllib.request.urlopen", side_effect=mocked_requests_post)
     def test_get_resource_json_obj_combine(self, mock_get):
         resource_id_mongo = "x86-ubuntu-18.04-img"
         resource_version_mongo = "1.0.0"
@@ -293,12 +297,12 @@ class ClientWrapperTestSuite(unittest.TestCase):
         resource_mongo = get_resource_json_obj(
             resource_id_mongo,
             resource_version=resource_version_mongo,
-            database="gem5-resources",
+            databases=["gem5-resources"],
         )
         resource_json = get_resource_json_obj(
             resource_id_json,
             resource_version=resource_version_json,
-            database="baba",
+            databases=["baba"],
         )
         self.assertEqual(resource_mongo["id"], "x86-ubuntu-18.04-img")
         self.assertEqual(resource_mongo["resource_version"], "1.0.0")

@@ -399,7 +399,7 @@ def get_resource(
     untar: bool = True,
     download_md5_mismatch: bool = True,
     resource_version: Optional[str] = None,
-    database: Optional[str] = None,
+    databases: Optional[List] = [],
 ) -> None:
     """
     Obtains a gem5 resource and stored it to a specified location. If the
@@ -432,8 +432,10 @@ def get_resource(
     # minutes.Most resources should be downloaded and decompressed in this
     # timeframe, even on the most constrained of systems.
     with FileLock(f"{to_path}.lock", timeout=900):
-        resource_json = get_resource_json_obj(
-            resource_name, resource_version=resource_version, database=database
+        resource_obj = get_resource_json_obj(
+            resource_name,
+            resource_version=resource_version,
+            databases=databases,
         )
 
         if os.path.exists(to_path):

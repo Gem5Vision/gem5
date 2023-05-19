@@ -48,7 +48,7 @@ from unittest.mock import patch
 
 mock_config_json = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
-    "resources": {
+    "sources": {
         "baba": {
             "url": "tests/pyunit/stdlib/resources/refs/obtain-resource.json",
             "isMongo": False,
@@ -172,7 +172,9 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_version="1.7.0",
             )
         self.assertTrue(
-            "Resource with ID 'invalid-id' not found."
+            "Resource invalid-id with version '1.7.0'"
+            " not found.\nResource versions can be found at: "
+            "https://gem5vision.github.io/gem5-resources-website/resources/invalid-id/versions"
             in str(context.exception)
         )
 

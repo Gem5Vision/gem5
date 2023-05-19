@@ -28,7 +28,7 @@
 from typing import Optional, Dict
 import json
 from pathlib import Path
-from typing import Optional, Dict
+from typing import Optional, Dict, List
 from .client_api.jsonclient import JSONClient
 from .client_api.mongoclient import MongoClient
 
@@ -42,8 +42,8 @@ def create_clients(
     Returns: clients: dictionary of clients for each database
     """
     clients = {}
-    for client in config["resources"]:
-        database = config["resources"][client]
+    for client in config["sources"]:
+        database = config["sources"][client]
         if database["isMongo"]:
             clients[client] = MongoClient(database)
         else:
@@ -73,7 +73,7 @@ if clients is None:
 def get_resource_json_obj(
     resource_id,
     resource_version: Optional[str] = None,
-    database: Optional[str] = None,
+    databases: Optional[List[str]] = [],
 ) -> Dict:
     """
     This function returns the resource object from the corresponding database.
@@ -83,10 +83,30 @@ def get_resource_json_obj(
     :optional param database: database name. If not provided, the first database in the config file is used
     :return: resource object
     """
-    if not database:
-        database = list(clients.keys())[0]
-    if database not in clients:
-        raise Exception(f"Database: {database} does not exist")
-    return clients[database].get_resource_json_obj_from_client(
-        resource_id, resource_version
-    )
+    resources = []
+    if not databases:
+        databases = list(clients.keys())
+    for database in databases:
+        if database not in clients:
+            raise Exception(f"Database: {database} does not exist")
+        resource = clients[database].get_resource_json_obj_from_client(
+            resource_id, resource_version
+        )
+        if resource is not None:
+            resources.append(resource)
+
+    if len(resources) == 0:
+        if resource_version is None:
+            raise Exception(f"Resource with ID '{resource_id}' not found.")
+        else:
+            raise Exception(
+                f"Resource {resource_id} with version '{resource_version}'"
+                " not found.\nResource versions can be found at: "
+                f"https://gem5vision.github.io/gem5-resources-website/resources/{resource_id}/versions"
+            )
+    if len(resources) > 1:
+        raise Exception(
+            f"Resource: {resource_id} exists in multiple databases"
+        )
+
+    return resources[0]

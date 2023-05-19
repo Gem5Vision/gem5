@@ -37,14 +37,12 @@ from gem5.resources.looppoint import (
 
 from gem5.isas import ISA
 
-from python.gem5.resources.client_wrapper import (
-    create_clients,
-)
+from python.gem5.resources.client_wrapper import create_clients, clients
 from unittest.mock import patch
 
 mock_config_json = {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
-    "resources": {
+    "sources": {
         "baba": {
             "url": "tests/pyunit/stdlib/resources/refs/resource-specialization.json",
             "isMongo": False,
@@ -53,9 +51,9 @@ mock_config_json = {
 }
 
 
-@patch("python.gem5.resources.client_wrapper.config", mock_config_json)
+@patch("gem5.resources.client_wrapper.config", mock_config_json)
 @patch(
-    "python.gem5.resources.client_wrapper.clients",
+    "gem5.resources.client_wrapper.clients",
     create_clients(mock_config_json),
 )
 class ResourceSpecializationSuite(unittest.TestCase):

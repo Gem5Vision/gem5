@@ -1,6 +1,6 @@
 {
     "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
-    "resources": {
+    "sources": {
         "gem5-resources": {
             "dataSource": "gem5-vision",
             "database": "gem5-vision",
