@@ -41,7 +41,7 @@ from tempfile import gettempdir
 from urllib.error import HTTPError
 from typing import List, Dict, Set, Optional
 
-from python.gem5.resources.api.client_wrapper import get_resource_obj
+from .client_wrapper import get_resource_json_obj
 from .md5_utils import md5_file, md5_dir
 from ..utils.progress_bar import tqdm, progress_hook
 
@@ -432,7 +432,7 @@ def get_resource(
     # minutes.Most resources should be downloaded and decompressed in this
     # timeframe, even on the most constrained of systems.
     with FileLock(f"{to_path}.lock", timeout=900):
-        resource_json = get_resource_obj(
+        resource_json = get_resource_json_obj(
             resource_name, resource_version=resource_version, database=database
         )
 

@@ -36,7 +36,7 @@ from gem5.resources.resource import (
 
 from typing import Dict
 
-from python.gem5.resources.api.client_wrapper import create_clients
+from python.gem5.resources.client_wrapper import create_clients
 from unittest.mock import patch
 
 mock_config_json1 = {
@@ -66,11 +66,9 @@ class CustomWorkloadTestSuite(unittest.TestCase):
     """
 
     @classmethod
+    @patch("python.gem5.resources.client_wrapper.config", mock_config_json1)
     @patch(
-        "python.gem5.resources.api.client_wrapper.config", mock_config_json1
-    )
-    @patch(
-        "python.gem5.resources.api.client_wrapper.clients",
+        "python.gem5.resources.client_wrapper.clients",
         create_clients(mock_config_json1),
     )
     def setUpClass(cls) -> None:
@@ -152,11 +150,9 @@ class WorkloadTestSuite(unittest.TestCase):
     """
 
     @classmethod
+    @patch("python.gem5.resources.client_wrapper.config", mock_config_json2)
     @patch(
-        "python.gem5.resources.api.client_wrapper.config", mock_config_json2
-    )
-    @patch(
-        "python.gem5.resources.api.client_wrapper.clients",
+        "python.gem5.resources.client_wrapper.clients",
         create_clients(mock_config_json2),
     )
     def setUpClass(cls):

@@ -25,8 +25,10 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 from .client import AbstractClient
-import requests
-from typing import Optional, Dict, Union, Type, Tuple, List
+
+from urllib import request, parse
+from typing import Optional, Dict, Union, Type, Tuple, List, Any
+import json
 
 
 class MongoClient(AbstractClient):
@@ -45,47 +47,38 @@ class MongoClient(AbstractClient):
         self.name = config["name"]
 
     def get_token(self):
-        token = requests.post(
-            f"https://realm.mongodb.com/api/client/v2.0/app/{self.name}/auth/providers/api-key/login",
-            json={"key": self.apiKey},
+        url = f"https://realm.mongodb.com/api/client/v2.0/app/"
+        "{self.name}/auth/providers/api-key/login"
+        data = {"key": self.apiKey}
+        data = json.dumps(data).encode("utf-8")
+
+        req = request.Request(
+            url, data=data, headers={"Content-Type": "application/json"}
         )
-        return token.json()["access_token"]
+        response = request.urlopen(req)
+        result = json.loads(response.read().decode("utf-8"))
+        token = result["access_token"]
 
-    def __get_resource_by_id(self, resource_id: str) -> List[Dict]:
-        resources = requests.post(
-            f"{self.url}/action/find",
-            json={
-                "dataSource": self.dataSource,
-                "collection": self.collection,
-                "database": self.database,
-                "filter": {"id": resource_id},
-            },
-            headers={"Authorization": f"Bearer {self.get_token()}"},
-        )
-        return resources.json()["documents"]
+        return token
 
-    def get_resource_obj_from_client(
-        self,
-        resource_id: str,
-        resource_version: Optional[str] = None,
-    ) -> Dict:
-        """
-        :param resource_id: The ID of the Resource.
-        :optional param resource_version: The version of the Resource.
-        If not given, the latest version compatible with current gem5 version is returned.
-        :return: The Resource as a Python dictionary.
-        """
-        # getting all the resources with the given ID from MongoDB
-        resources = list(self.__get_resource_by_id(resource_id))
-        # if no resource with the given ID is found throw an Exception
-        if len(resources) == 0:
-            raise Exception(f"Resource with ID '{resource_id}' not found.")
-        # sorting the resources by version
-        resources = self._sort_resources_by_version(resources)
+    def get_resources_by_id(self, resource_id: str) -> List[Dict[str, Any]]:
+        url = f"{self.url}/action/find"
+        data = {
+            "dataSource": self.dataSource,
+            "collection": self.collection,
+            "database": self.database,
+            "filter": {"id": resource_id},
+        }
+        data = json.dumps(data).encode("utf-8")
 
-        # if a version is given, search for the resource with the given version
-        if resource_version:
-            return self._search_version(resources, resource_version)
+        headers = {
+            "Authorization": f"Bearer {self.get_token()}",
+            "Content-Type": "application/json",
+        }
 
-        # if no version is given, return the compatible resource with the latest version
-        return self._get_compatible_resources(resources)[0]
+        req = request.Request(url, data=data, headers=headers)
+        response = request.urlopen(req)
+        result = json.loads(response.read().decode("utf-8"))
+        resources = result["documents"]
+
+        return resources

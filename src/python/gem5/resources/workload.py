@@ -24,9 +24,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .downloader import get_workload_json_obj
 from .resource import obtain_resource
-from python.gem5.resources.api.client_wrapper import get_resource_obj
+from .client_wrapper import get_resource_json_obj
 
 from typing import Dict, Any, Optional
 
@@ -204,7 +203,7 @@ class Workload(AbstractWorkload):
         location will be used. None by default.
         """
 
-        workload_json = get_resource_obj(
+        workload_json = get_resource_json_obj(
             workload_name, resource_version=resource_version, database=database
         )
 
@@ -225,4 +224,5 @@ class Workload(AbstractWorkload):
             for key in workload_json["additional_params"]:
                 assert isinstance(key, str)
                 params[key] = workload_json["additional_params"][key]
+
         super().__init__(function=func, parameters=params)

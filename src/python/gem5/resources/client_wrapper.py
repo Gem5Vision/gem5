@@ -24,52 +24,57 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .jsonclient import JSONClient
-from .mongoclient import MongoClient
+
+from typing import Optional, Dict
 import json
 from pathlib import Path
-from typing import Optional, Dict, Union, Type, Tuple, List
+from typing import Optional, Dict
+from .client_api.jsonclient import JSONClient
+from .client_api.mongoclient import MongoClient
 
 
 def create_clients(
-    config: dict,
-):
+    config: Dict,
+) -> Dict:
     """
     This function creates respective client object for each database in the config file according to the type of database.
     Params: config: config file containing the database information
     Returns: clients: dictionary of clients for each database
     """
     clients = {}
-    for resource in config["resources"]:
-        database = config["resources"][resource]
+    for client in config["resources"]:
+        database = config["resources"][client]
         if database["isMongo"]:
-            clients[resource] = MongoClient(database)
+            clients[client] = MongoClient(database)
         else:
-            clients[resource] = JSONClient(database["url"])
+            clients[client] = JSONClient(database["url"])
     return clients
 
 
 clients = None
+""" config_file_path = (
+    Path(__file__).resolve().parent.parent.parent.parent.parent.parent.parent
+    / "src/python/gem5-config.json"
+) """
+config_file_path = (
+    Path("/home/paikunal/gem5Vision/gem5") / "src/python/gem5-config.json"
+)
 
+if config_file_path.exists():
+    with open(config_file_path, "r") as file:
+        config = json.load(file)
+else:
+    config = {}
 
 if clients is None:
-    # read gem5/configs/gem5Resources.config.json using pathlib
-    # gem5Resources.config.json contains the database information
-    config = json.load(
-        open(
-            Path(__file__).parent.parent.parent.parent.parent.parent.parent
-            / "configs/gem5Resources.config.json",
-            "r",
-        )
-    )
     clients = create_clients(config)
 
 
-def get_resource_obj(
+def get_resource_json_obj(
     resource_id,
     resource_version: Optional[str] = None,
     database: Optional[str] = None,
-) -> dict:
+) -> Dict:
     """
     This function returns the resource object from the corresponding database.
 
@@ -82,4 +87,6 @@ def get_resource_obj(
         database = list(clients.keys())[0]
     if database not in clients:
         raise Exception(f"Database: {database} does not exist")
-    return clients[database].get_resource_obj_from_client(resource_id, resource_version)
+    return clients[database].get_resource_json_obj_from_client(
+        resource_id, resource_version
+    )

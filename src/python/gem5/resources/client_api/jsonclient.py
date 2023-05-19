@@ -26,7 +26,8 @@
 
 import json
 from pathlib import Path
-import requests
+
+from urllib import request
 from .client import AbstractClient
 from typing import Optional, Dict, Union, Type, Tuple, List, Any
 
@@ -47,30 +48,17 @@ class JSONClient(AbstractClient):
                 f"Resources location '{self.path}' is not a valid path or URL."
             )
         else:
-            self.resources = requests.get(self.path).json()
+            req = request.Request(self.path)
+            response = request.urlopen(req)
+            self.resources = json.loads(response.read().decode("utf-8"))
 
-    def get_resource_obj_from_client(
-        self, resource_id: str, resource_version: Optional[str] = None
-    ) -> Dict[str, Any]:
+    def get_resources_by_id(self, resource_id: str) -> List[Dict[str, Any]]:
         """
         :param resource_id: The ID of the Resource.
-        :optional param resource_version: The version of the Resource.
-        If not given, the latest version compatible with current gem5 version is returned.
-        :return: The Resource as a Python dictionary.
+        :return: A list of all the Resources with the given ID.
         """
-        # getting all the resources with the given id from the dictionary
-        resources = [
-            resource for resource in self.resources if resource["id"] == resource_id
+        return [
+            resource
+            for resource in self.resources
+            if resource["id"] == resource_id
         ]
-        # if no resource with the given id is found throw an exception
-        if len(resources) == 0:
-            raise Exception(f"Resource with ID '{resource_id}' not found.")
-        # sorting the resources by version
-        resources = self._sort_resources_by_version(resources)
-
-        # if a version is given, search for the resource with the given version
-        if resource_version:
-            return self._search_version(resources, resource_version)
-
-        # if no version is given, return the compatible resource with the latest version
-        return self._get_compatible_resources(resources)[0]

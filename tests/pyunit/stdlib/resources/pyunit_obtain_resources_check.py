@@ -40,8 +40,9 @@ from gem5.isas import ISA
 
 from _m5 import core
 
-from python.gem5.resources.api.client_wrapper import (
+from gem5.resources.client_wrapper import (
     create_clients,
+    clients,
 )
 from unittest.mock import patch
 
@@ -56,10 +57,9 @@ mock_config_json = {
 }
 
 
-@patch("python.gem5.resources.api.client_wrapper.config", mock_config_json)
 @patch(
-    "python.gem5.resources.api.client_wrapper.clients",
-    create_clients(mock_config_json),
+    "gem5.resources.client_wrapper.clients",
+    new=create_clients(mock_config_json),
 )
 class TestObtainResourcesCheck(unittest.TestCase):
     @classmethod
@@ -118,7 +118,9 @@ class TestObtainResourcesCheck(unittest.TestCase):
         self.assertEquals("1.7.0", resource.get_resource_version())
         self.assertIsInstance(resource, BinaryResource)
         # self.assertIn(gem5Version, resource.get_gem5_versions())
-        self.assertEquals("test description v1.7.0", resource.get_description())
+        self.assertEquals(
+            "test description v1.7.0", resource.get_description()
+        )
         self.assertEquals("src/test-source", resource.get_source())
         self.assertEquals(ISA.ARM, resource.get_architecture())
 
@@ -132,8 +134,8 @@ class TestObtainResourcesCheck(unittest.TestCase):
             )
         print(warning.warning.args[0])
         self.assertTrue(
-            f"Resource compatible with gem5 version: '{core.gem5Version}' not found.\n"
-            "Resource versions can be found at: "
+            f"Resource test-binary-resource version 1.5.0 is not known to be compatible with gem5 version {core.gem5Version}. "
+            "This may cause problems with your simulation. This resource's compatibility with different gem5 versions can be found here:"
             f"https://gem5vision.github.io/gem5-resources-website/resources/test-binary-resource/versions"
             in warning.warning.args[0]
         )
@@ -145,7 +147,9 @@ class TestObtainResourcesCheck(unittest.TestCase):
         )
         self.assertEquals("1.5.0", resource.get_resource_version())
         self.assertIsInstance(resource, BinaryResource)
-        self.assertEquals("test description for 1.5.0", resource.get_description())
+        self.assertEquals(
+            "test description for 1.5.0", resource.get_description()
+        )
         self.assertEquals("src/test-source", resource.get_source())
         self.assertEquals(ISA.ARM, resource.get_architecture())
 
@@ -156,7 +160,8 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_directory=self.get_resource_dir(),
             )
         self.assertTrue(
-            "Resource with ID 'invalid-id' not found." in str(context.exception)
+            "Resource with ID 'invalid-id' not found."
+            in str(context.exception)
         )
 
     def test_obtain_resources_with_version_invalid_id(self):
@@ -167,7 +172,8 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_version="1.7.0",
             )
         self.assertTrue(
-            "Resource with ID 'invalid-id' not found." in str(context.exception)
+            "Resource with ID 'invalid-id' not found."
+            in str(context.exception)
         )
 
     def test_obtain_resources_with_version_invalid_version(self):
@@ -177,6 +183,7 @@ class TestObtainResourcesCheck(unittest.TestCase):
                 resource_directory=self.get_resource_dir(),
                 resource_version="3.0.0",
             )
+        print(str(context.exception))
         self.assertTrue(
             f"Resource test-binary-resource with version '3.0.0'"
             " not found.\nResource versions can be found at: "

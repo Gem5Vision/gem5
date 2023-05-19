@@ -27,17 +27,16 @@
 from abc import ABCMeta
 import os
 from pathlib import Path
-
 from m5.util import warn, fatal
 
-from .downloader import get_resource, get_resources_json_obj
+from .downloader import get_resource
 
 from .looppoint import LooppointCsvLoader, LooppointJsonLoader
 from ..isas import ISA, get_isa_from_str
 
 from typing import Optional, Dict, Union, Type, Tuple, List
 
-from python.gem5.resources.api.client_wrapper import get_resource_obj, create_clients
+from .client_wrapper import get_resource_json_obj
 
 """
 Resources are items needed to run a simulation, such as a disk image, kernel,
@@ -89,7 +88,8 @@ class AbstractResource:
 
         if local_path and not os.path.exists(local_path):
             raise Exception(
-                f"Local path specified for resource, '{local_path}', does not " "exist."
+                f"Local path specified for resource, '{local_path}', does not "
+                "exist."
             )
 
         self._local_path = local_path
@@ -586,7 +586,7 @@ def obtain_resource(
     """
 
     # Obtain the resource object entry for this resource
-    resource_obj = get_resource_obj(
+    resource_obj = get_resource_json_obj(
         resource_id, resource_version=resource_version, database=database
     )
 
@@ -607,7 +607,9 @@ def obtain_resource(
             if not os.path.isdir(resource_directory):
                 raise Exception(
                     "gem5 resource directory, "
-                    "'{}', exists but is not a directory".format(resource_directory)
+                    "'{}', exists but is not a directory".format(
+                        resource_directory
+                    )
                 )
         else:
             # `exist_ok=True` here as, occasionally, if multiple instance of
