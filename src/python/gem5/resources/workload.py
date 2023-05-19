@@ -177,7 +177,7 @@ class Workload(AbstractWorkload):
             "function" : "set_kernel_disk_workload",
             "resources" : {
                 "kernel" : "x86-linux-kernel-5.4.49",
-                "diskimage" : "x86-ubuntu-18.04-img"
+                "disk_image" : "x86-ubuntu-18.04-img"
             },
             "additional_params" : {
                 "readfile_contents" : "m5_exit; echo 'hello'; m5_exit"
@@ -191,7 +191,7 @@ class Workload(AbstractWorkload):
         ```python
         board.set_kernel_disk_workload(
             kernel = Resource("x86-linux-kernel-5.4.49"),
-            diskimage = Resource("x86-ubuntu-18.04-img"),
+            disk_image = Resource("x86-ubuntu-18.04-img"),
             readfile_contents = "m5_exit; echo 'hello'; m5_exit",
         )
         ```
