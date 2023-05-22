@@ -43,8 +43,8 @@ class ResourceDownloadTestSuite(unittest.TestCase):
 
     def get_resource_json_by_id(self) -> None:
         """Get a resource by its id"""
-        resources = get_resources_json_obj("batman")
-        self.assertEqual(resources["id"], "batman")
+        resources = get_resources_json_obj("test-version")
+        self.assertEqual(resources["id"], "test-version")
         self.assertEqual(resources["resource_version"], "2.0.0")
 
     def get_resource_json_invalid_id(self) -> None:
@@ -58,15 +58,15 @@ class ResourceDownloadTestSuite(unittest.TestCase):
 
     def get_resource_json_by_id_and_version(self) -> None:
         """Get a resource by its id and version"""
-        resources = get_resources_json_obj("batman", "1.0.0")
-        self.assertEqual(resources["id"], "batman")
+        resources = get_resources_json_obj("test-version", "1.0.0")
+        self.assertEqual(resources["id"], "test-version")
         self.assertEqual(resources["resource_version"], "1.0.0")
 
     def get_resource_json_by_id_and_invalid_version(self) -> None:
         """Get a resource by its id and an invalid version (does not exist)"""
         with self.assertRaises(Exception) as context:
-            get_resources_json_obj("batman", "3.0.0")
+            get_resources_json_obj("test-version", "3.0.0")
         self.assertTrue(
-            f"Specified Version 3.0.0 does not exist for the resource 'batman'."
+            f"Specified Version 3.0.0 does not exist for the resource 'test-version'."
             in str(context.exception)
         )

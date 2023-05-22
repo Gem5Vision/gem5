@@ -115,7 +115,8 @@ def get_resource_json_obj(
             )
     if len(resources) > 1:
         raise Exception(
-            f"Resource: {resource_id} exists in multiple databases"
+            f"Resource: {resource_id} exists in multiple databases. "
+            "Please specify the database name to use."
         )
 
     return resources[0]

@@ -327,3 +327,61 @@ class ClientWrapperTestSuite(unittest.TestCase):
             "https://github.com/gem5/gem5-resources/tree/develop/src/asmtest",
         )
         self.assertEqual(resource_json["architecture"], "X86")
+
+    @patch("gem5.resources.client_wrapper.config", mock_config_combined)
+    @patch(
+        "gem5.resources.client_wrapper.clients",
+        create_clients(mock_config_combined),
+    )
+    def test_get_resource_json_obj_multi_database_second_only(self):
+        resource_id = "simpoint-resource"
+        resource = get_resource_json_obj(
+            resource_id,
+        )
+        self.assertEqual(resource["id"], resource_id)
+        self.assertEqual(resource["resource_version"], "0.2.0")
+        self.assertEqual(resource["category"], "file")
+        self.assertEqual(
+            resource["description"],
+            (
+                "Simpoints for running the 'x86-print-this' resource with"
+                ' the parameters `"print this" 15000`. This is encapsulated'
+                " in the 'x86-print-this-15000-with-simpoints' workload."
+            ),
+        )
+
+    @patch("gem5.resources.client_wrapper.config", mock_config_combined)
+    @patch(
+        "gem5.resources.client_wrapper.clients",
+        create_clients(mock_config_combined),
+    )
+    def test_get_resource_json_same_resource_different_versions(self):
+        resource_id = "x86-ubuntu-18.04-img"
+        with self.assertRaises(Exception) as context:
+            get_resource_json_obj(
+                resource_id,
+            )
+        self.assertTrue(
+            f"Resource: {resource_id} exists in multiple databases. "
+            "Please specify the database name to use."
+        )
+        resource_version_mongo = "1.0.0"
+        resource_version_json = "2.0.0"
+        resource_mongo = get_resource_json_obj(
+            resource_id,
+            resource_version=resource_version_mongo,
+        )
+        resource_json = get_resource_json_obj(
+            resource_id,
+            databases=["baba"],
+        )
+        self.assertEqual(resource_mongo["id"], "x86-ubuntu-18.04-img")
+        self.assertEqual(
+            resource_mongo["resource_version"], resource_version_mongo
+        )
+        self.assertEqual(resource_mongo["category"], "disk_image")
+        self.assertEqual(resource_json["id"], "x86-ubuntu-18.04-img")
+        self.assertEqual(
+            resource_json["resource_version"], resource_version_json
+        )
+        self.assertEqual(resource_json["category"], "disk_image")

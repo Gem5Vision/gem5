@@ -86,7 +86,7 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
             },
             {
                 "category": "simpoint",
-                "id": "batman",
+                "id": "test-version",
                 "description": "Simpoints for running the 'x86-print-this' resource with the parameters `\"print this\" 15000`. This is encapsulated in the 'x86-print-this-15000-with-simpoints' workload.",
                 "architecture": "X86",
                 "size": 10240,
@@ -112,7 +112,7 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
             },
             {
                 "category": "file",
-                "id": "batman",
+                "id": "test-version",
                 "description": "Simpoints for running the 'x86-print-this' resource with the parameters `\"print this\" 15000`. This is encapsulated in the 'x86-print-this-15000-with-simpoints' workload.",
                 "architecture": "X86",
                 "size": 10240,
@@ -162,9 +162,9 @@ class ResourceDownloaderTestSuite(unittest.TestCase):
         self.assertTrue("id" in json[1])
         self.assertEquals("this-is-a-test-resource", json[1]["id"])
         self.assertTrue("id" in json[2])
-        self.assertEquals("batman", json[2]["id"])
+        self.assertEquals("test-version", json[2]["id"])
         self.assertTrue("id" in json[3])
-        self.assertEquals("batman", json[3]["id"])
+        self.assertEquals("test-version", json[3]["id"])
 
     def test_get_resources_json_at_path(self) -> None:
         # Tests the gem5.resources.downloader._get_resources_json_at_path()
