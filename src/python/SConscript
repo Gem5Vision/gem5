@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 Import('*')
+Import('env')
 
 PySource('gem5', 'gem5/__init__.py')
 PySource('gem5', 'gem5/coherence_protocol.py')
@@ -262,12 +263,23 @@ PySource('gem5.prebuilt.riscvmatched',
 PySource('gem5.prebuilt.riscvmatched',
     'gem5/prebuilt/riscvmatched/riscvmatched_core.py')
 PySource('gem5.resources', 'gem5/resources/__init__.py')
+PySource('gem5.resources', 'gem5/resources/client_wrapper.py')
 PySource('gem5.resources', 'gem5/resources/downloader.py')
 PySource('gem5.resources', 'gem5/resources/md5_utils.py')
 PySource('gem5.resources', 'gem5/resources/resource.py')
 PySource('gem5.resources', 'gem5/resources/workload.py')
 PySource('gem5.resources', 'gem5/resources/looppoint.py')
 PySource('gem5.resources', 'gem5/resources/elfie.py')
+PySource('gem5.resources.client_api', 'gem5/resources/client_api/__init__.py')
+PySource('gem5.resources.client_api', 'gem5/resources/client_api/jsonclient.py')
+PySource('gem5.resources.client_api', 'gem5/resources/client_api/mongoclient.py')
+PySource('gem5.resources.client_api', 'gem5/resources/client_api/client.py')
+
+env.Command(
+    'gem5-config.json', 'gem5-config.json',
+    Copy("$TARGET", "${SOURCE.srcpath}")
+)
+
 PySource('gem5.utils', 'gem5/utils/__init__.py')
 PySource('gem5.utils', 'gem5/utils/filelock.py')
 PySource('gem5.utils', 'gem5/utils/override.py')

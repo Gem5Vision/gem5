@@ -36,6 +36,30 @@ from gem5.resources.resource import (
 
 from typing import Dict
 
+from gem5.resources.client_wrapper import clientwrapper
+from gem5.resources.client_api.client import ClientWrapper
+from unittest.mock import patch
+
+mock_config_json1 = {
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "sources": {
+        "baba": {
+            "url": "tests/pyunit/stdlib/resources/refs/workload-checks-custom-workload.json",
+            "isMongo": False,
+        }
+    },
+}
+
+mock_config_json2 = {
+    "schemaUrl": "https://raw.githubusercontent.com/Gem5Vision/json-to-mongodb/main/schema/schema.json",
+    "sources": {
+        "baba": {
+            "url": "tests/pyunit/stdlib/resources/refs/workload-checks.json",
+            "isMongo": False,
+        }
+    },
+}
+
 
 class CustomWorkloadTestSuite(unittest.TestCase):
     """
@@ -43,8 +67,12 @@ class CustomWorkloadTestSuite(unittest.TestCase):
     """
 
     @classmethod
+    @patch("gem5.resources.client_wrapper.config", mock_config_json1)
+    @patch(
+        "gem5.resources.client_wrapper.clientwrapper",
+        new=ClientWrapper(mock_config_json1),
+    )
     def setUpClass(cls) -> None:
-
         os.environ["GEM5_RESOURCE_JSON"] = os.path.join(
             os.path.realpath(os.path.dirname(__file__)),
             "refs",
@@ -114,8 +142,7 @@ class CustomWorkloadTestSuite(unittest.TestCase):
             "test", self.custom_workload.get_parameters()["binary"]
         )
 
-        # We set the overridden parameter back to it's old value.
-        self.custom_workload.set_parameter("binary", old_value)
+        # We set the overridden parameter back to it's old valu        self.custom_workload.set_parameter("binary", old_value)
 
 
 class WorkloadTestSuite(unittest.TestCase):
@@ -124,8 +151,12 @@ class WorkloadTestSuite(unittest.TestCase):
     """
 
     @classmethod
+    @patch("gem5.resources.client_wrapper.config", mock_config_json2)
+    @patch(
+        "gem5.resources.client_wrapper.clientwrapper",
+        ClientWrapper(mock_config_json2),
+    )
     def setUpClass(cls):
-
         os.environ["GEM5_RESOURCE_JSON"] = os.path.join(
             os.path.realpath(os.path.dirname(__file__)),
             "refs",
@@ -157,9 +188,9 @@ class WorkloadTestSuite(unittest.TestCase):
         self.assertTrue("kernel" in parameters)
         self.assertTrue(isinstance(parameters["kernel"], BinaryResource))
 
-        self.assertTrue("disk_image" in parameters)
+        self.assertTrue("disk-image" in parameters)
         self.assertTrue(
-            isinstance(parameters["disk_image"], DiskImageResource)
+            isinstance(parameters["disk-image"], DiskImageResource)
         )
 
         self.assertTrue("readfile_contents" in parameters)
