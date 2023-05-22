@@ -41,6 +41,7 @@ from tempfile import gettempdir
 from urllib.error import HTTPError
 from typing import List, Dict, Set, Optional
 
+from .client_wrapper import get_resource_json_obj
 from .md5_utils import md5_file, md5_dir
 from ..utils.progress_bar import tqdm, progress_hook
 
@@ -109,7 +110,6 @@ def _get_resources_json_at_path(path: str, use_caching: bool = True) -> Dict:
     # its Truncated Exponential Backoff algorithm
     # (maximum of roughly 1 minute). Typically this code will run quickly.
     with FileLock(f"{download_path}.lock", timeout=120):
-
         # The resources.json file can change at any time, but to avoid
         # excessive retrieval we cache a version locally and use it for up to
         # an hour before obtaining a fresh copy.
@@ -398,6 +398,8 @@ def get_resource(
     unzip: bool = True,
     untar: bool = True,
     download_md5_mismatch: bool = True,
+    resource_version: Optional[str] = None,
+    databases: Optional[List] = [],
 ) -> None:
     """
     Obtains a gem5 resource and stored it to a specified location. If the
@@ -430,17 +432,19 @@ def get_resource(
     # minutes.Most resources should be downloaded and decompressed in this
     # timeframe, even on the most constrained of systems.
     with FileLock(f"{to_path}.lock", timeout=900):
-
-        resource_json = get_resources_json_obj(resource_name)
+        resource_obj = get_resource_json_obj(
+            resource_name,
+            resource_version=resource_version,
+            databases=databases,
+        )
 
         if os.path.exists(to_path):
-
             if os.path.isfile(to_path):
                 md5 = md5_file(Path(to_path))
             else:
                 md5 = md5_dir(Path(to_path))
 
-            if md5 == resource_json["md5sum"]:
+            if md5 == resource_obj["md5sum"]:
                 # In this case, the file has already been download, no need to
                 # do so again.
                 return
@@ -461,10 +465,10 @@ def get_resource(
         # string-based way of doing things. It can be refactored away over
         # time:
         # https://gem5-review.googlesource.com/c/public/gem5-resources/+/51168
-        if isinstance(resource_json["is_zipped"], str):
-            run_unzip = unzip and resource_json["is_zipped"].lower() == "true"
-        elif isinstance(resource_json["is_zipped"], bool):
-            run_unzip = unzip and resource_json["is_zipped"]
+        if isinstance(resource_obj["is_zipped"], str):
+            run_unzip = unzip and resource_obj["is_zipped"].lower() == "true"
+        elif isinstance(resource_obj["is_zipped"], bool):
+            run_unzip = unzip and resource_obj["is_zipped"]
         else:
             raise Exception(
                 "The resource.json entry for '{}' has a value for the "
@@ -475,8 +479,8 @@ def get_resource(
 
         run_tar_extract = (
             untar
-            and "is_tar_archive" in resource_json
-            and resource_json["is_tar_archive"]
+            and "is_tar_archive" in resource_obj
+            and resource_obj["is_tar_archive"]
         )
 
         tar_extension = ".tar"
@@ -495,9 +499,8 @@ def get_resource(
             )
         )
 
-        # Get the URL. The URL may contain '{url_base}' which needs replaced
-        # with the correct value.
-        url = resource_json["url"].format(url_base=_get_url_base())
+        # Get the URL.
+        url = resource_obj["url"]
 
         _download(url=url, download_to=download_dest)
         print(f"Finished downloading resource '{resource_name}'.")
@@ -523,7 +526,6 @@ def get_resource(
             with tarfile.open(download_dest) as f:
 
                 def is_within_directory(directory, target):
-
                     abs_directory = os.path.abspath(directory)
                     abs_target = os.path.abspath(target)
 
@@ -534,7 +536,6 @@ def get_resource(
                 def safe_extract(
                     tar, path=".", members=None, *, numeric_owner=False
                 ):
-
                     for member in tar.getmembers():
                         member_path = os.path.join(path, member.name)
                         if not is_within_directory(path, member_path):

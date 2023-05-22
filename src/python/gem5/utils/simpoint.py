@@ -85,12 +85,10 @@ class SimPoint:
             weight_file_path = simpoint_resource.get_weight_file()
             simpoint_interval = (
                 simpoint_resource.get_metadata()
-                .get("additional_metadata")
                 .get("simpoint_interval")
             )
             warmup_interval = (
                 simpoint_resource.get_metadata()
-                .get("additional_metadata")
                 .get("warmup_interval")
             )
 
