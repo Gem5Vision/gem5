@@ -667,44 +667,24 @@ decode QUADRANT default Unknown::unknown() {
                             | (Rs1 << ((xlen - imm) & (xlen - 1))));
                     }}, imm_type = uint64_t, imm_code = {{ imm = SHAMT6; }});
                     0xd: decode RS2 {
-                        0x18: decode BIT25 {
-                            0x0: rv32_rev8({{
-                                uint32_t result = 0;
-                                result |=
-                                    ((Rs1_uw & 0xffUL) << 24)
-                                    | (((Rs1_uw >> 24) & 0xffUL));
-                                result |=
-                                    (((Rs1_uw >> 8) & 0xffUL) << 16)
-                                    | (((Rs1_uw >> 16) & 0xffUL) << 8);
-                                Rd = rvSext(result);
-                            }},
-                            imm_type = uint64_t, imm_code = {{ imm = SHAMT5; }});
-                            0x1: rev8({{
-                                uint64_t result = 0;
-                                result |=
-                                    ((Rs1 & 0xffULL) << 56)
-                                    | (((Rs1 >> 56) & 0xffULL));
-                                result |=
-                                    (((Rs1 >> 8) & 0xffULL) << 48)
-                                    | (((Rs1 >> 48) & 0xffULL) << 8);
-                                result |=
-                                    (((Rs1 >> 16) & 0xffULL) << 40)
-                                    | (((Rs1 >> 40) & 0xffULL) << 16);
-                                result |=
-                                    (((Rs1 >> 24) & 0xffULL) << 32)
-                                    | (((Rs1 >> 32) & 0xffULL) << 24);
-                                Rd = result;
-                            }},
-                            imm_type = uint64_t, imm_code = {{ imm = SHAMT6; }});
-                        }
-                        0x07: decode RVTYPE {
-                            0x0: rv32_brev8({{
-                                Rd_sw = _rvk_emu_brev8_32(Rs1_sw);
-                            }}, imm_code = {{ imm = SHAMT5; }});
-                            0x1: brev8({{
-                                Rd = _rvk_emu_brev8_64(Rs1);
-                            }}, imm_code = {{ imm = SHAMT6; }});
-                        }
+                        0x18: ROp::rev8({{
+                            if (rvSelect((bool)SHAMT6BIT5, false)) {
+                                return std::make_shared<IllegalInstFault>(
+                                        "shmat[5] != 0", machInst);
+                            }
+                            if (machInst.rv_type == RV32) {
+                                Rd_sd = _rvk_emu_grev_32(Rs1_sd, 0x18);
+                            } else {
+                                Rd_sd = _rvk_emu_grev_64(Rs1_sd, 0x38);
+                            }
+                        }});
+                        0x07: ROp::brev8({{
+                            if (machInst.rv_type == RV32) {
+                                Rd_sd = _rvk_emu_brev8_32(Rs1_sd);
+                            } else {
+                                Rd_sd = _rvk_emu_brev8_64(Rs1_sd);
+                            }
+                        }});
                     }
                 }
                 0x6: ori({{
@@ -1021,27 +1001,27 @@ decode QUADRANT default Unknown::unknown() {
                         }
                     }
                     0x11: decode RVTYPE {
-                        0x0: aes32esi({{
-                            Rd_sw = _rvk_emu_aes32esi(Rs1_sw, Rs2_sw, (uint8_t)BS);
+                        0x0: BSOp::aes32esi({{
+                            Rd_sw = _rvk_emu_aes32esi(Rs1_sw, Rs2_sw, bs);
                         }});
                     }
                     0x13: decode RVTYPE {
-                        0x0: aes32esmi({{
-                            Rd_sw = _rvk_emu_aes32esmi(Rs1_sw, Rs2_sw, (uint8_t)BS);
+                        0x0: BSOp::aes32esmi({{
+                            Rd_sw = _rvk_emu_aes32esmi(Rs1_sw, Rs2_sw, bs);
                         }});
                     }
                     0x15: decode RVTYPE {
-                        0x0: aes32dsi({{
-                            Rd_sw = _rvk_emu_aes32dsi(Rs1_sw, Rs2_sw, (uint8_t)BS);
+                        0x0: BSOp::aes32dsi({{
+                            Rd_sw = _rvk_emu_aes32dsi(Rs1_sw, Rs2_sw, bs);
                         }});
                     }
                     0x17: decode RVTYPE {
-                        0x0: aes32dsmi({{
-                            Rd_sw = _rvk_emu_aes32dsmi(Rs1_sw, Rs2_sw, (uint8_t)BS);
+                        0x0: BSOp::aes32dsmi({{
+                            Rd_sw = _rvk_emu_aes32dsmi(Rs1_sw, Rs2_sw, bs);
                         }});
                     }
-                    0x18: sm4ed({{
-                        Rd_sw = _rvk_emu_sm4ed(Rs1_sw, Rs2_sw, (uint8_t)BS);
+                    0x18: BSOp::sm4ed({{
+                        Rd_sw = _rvk_emu_sm4ed(Rs1_sw, Rs2_sw, bs);
                     }});
                     0x19: decode BS {
                         0x0: decode RVTYPE {
@@ -1050,8 +1030,8 @@ decode QUADRANT default Unknown::unknown() {
                             }});
                         }
                     }
-                    0x1a: sm4ks({{
-                        Rd_sw = _rvk_emu_sm4ks(Rs1_sw, Rs2_sw, (uint8_t)BS);
+                    0x1a: BSOp::sm4ks({{
+                        Rd_sw = _rvk_emu_sm4ks(Rs1_sw, Rs2_sw, bs);
                     }});
                     0x1b: decode BS {
                         0x0: decode RVTYPE {
@@ -1084,34 +1064,13 @@ decode QUADRANT default Unknown::unknown() {
                     0x0: sll({{
                         Rd = rvSext(Rs1 << rvSelect(Rs2<4:0>, Rs2<5:0>));
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_mulh({{
-                            Rd_sw = ((int64_t)Rs1_sw * Rs2_sw) >> 32;
-                        }}, IntMultOp);
-                        0x1: mulh({{
-                            bool negate = (Rs1_sd < 0) != (Rs2_sd < 0);
-
-                            uint64_t Rs1_lo = (uint32_t)std::abs(Rs1_sd);
-                            uint64_t Rs1_hi = (uint64_t)std::abs(Rs1_sd) >> 32;
-                            uint64_t Rs2_lo = (uint32_t)std::abs(Rs2_sd);
-                            uint64_t Rs2_hi = (uint64_t)std::abs(Rs2_sd) >> 32;
-
-                            uint64_t hi = Rs1_hi*Rs2_hi;
-                            uint64_t mid1 = Rs1_hi*Rs2_lo;
-                            uint64_t mid2 = Rs1_lo*Rs2_hi;
-                            uint64_t lo = Rs2_lo*Rs1_lo;
-                            uint64_t carry = ((uint64_t)(uint32_t)mid1
-                                    + (uint64_t)(uint32_t)mid2
-                                    + (lo >> 32)) >> 32;
-
-                            uint64_t res = hi +
-                                          (mid1 >> 32) +
-                                          (mid2 >> 32) +
-                                          carry;
-                            Rd = negate ? ~res + (Rs1_sd*Rs2_sd == 0 ? 1 : 0)
-                                        : res;
-                        }}, IntMultOp);
-                    }
+                    0x1: mulh({{
+                        if (machInst.rv_type == RV32) {
+                            Rd_sd = mulh_32(Rs1_sd, Rs2_sd);
+                        } else {
+                            Rd_sd = mulh_64(Rs1_sd, Rs2_sd);
+                        }
+                    }}, IntMultOp);
                     0x5: clmul({{
                         uint64_t result = 0;
                         for (int i = 0; i < rvSelect(32, 64); i++) {
@@ -1144,32 +1103,13 @@ decode QUADRANT default Unknown::unknown() {
                     0x0: slt({{
                         Rd = (rvSext(Rs1_sd) < rvSext(Rs2_sd)) ? 1 : 0;
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_mulhsu({{
-                            Rd_sw = ((int64_t)Rs1_sw * Rs2_uw) >> 32;
-                        }}, IntMultOp);
-                        0x1: mulhsu({{
-                            bool negate = Rs1_sd < 0;
-                            uint64_t Rs1_lo = (uint32_t)std::abs(Rs1_sd);
-                            uint64_t Rs1_hi = (uint64_t)std::abs(Rs1_sd) >> 32;
-                            uint64_t Rs2_lo = (uint32_t)Rs2;
-                            uint64_t Rs2_hi = Rs2 >> 32;
-
-                            uint64_t hi = Rs1_hi*Rs2_hi;
-                            uint64_t mid1 = Rs1_hi*Rs2_lo;
-                            uint64_t mid2 = Rs1_lo*Rs2_hi;
-                            uint64_t lo = Rs1_lo*Rs2_lo;
-                            uint64_t carry = ((uint64_t)(uint32_t)mid1
-                                    + (uint64_t)(uint32_t)mid2
-                                    + (lo >> 32)) >> 32;
-
-                            uint64_t res = hi +
-                                          (mid1 >> 32) +
-                                          (mid2 >> 32) +
-                                          carry;
-                            Rd = negate ? ~res + (Rs1_sd*Rs2 == 0 ? 1 : 0) : res;
-                        }}, IntMultOp);
-                    }
+                    0x1: mulhsu({{
+                        if (machInst.rv_type == RV32) {
+                            Rd_sd = mulhsu_32(Rs1_sd, Rs2);
+                        } else {
+                            Rd_sd = mulhsu_64(Rs1_sd, Rs2);
+                        }
+                    }}, IntMultOp);
                     0x5: clmulr({{
                         uint64_t result = 0;
                         uint64_t xlen = rvSelect(32, 64);
@@ -1184,40 +1124,25 @@ decode QUADRANT default Unknown::unknown() {
                     0x10: sh1add({{
                         Rd = rvSext((Rs1 << 1) + Rs2);
                     }});
-                    0x14: decode RVTYPE {
-                        0x0: xperm4_32({{
-                            Rd_sw = _rvk_emu_xperm4_32(Rs1_sw, Rs2_sw);
-                        }});
-                        0x1: xperm4_64({{
+                    0x14: xperm4({{
+                        if (machInst.rv_type == RV32) {
+                            Rd_sd = _rvk_emu_xperm4_32(Rs1_sd, Rs2_sd);
+                        } else {
                             Rd_sd = _rvk_emu_xperm4_64(Rs1_sd, Rs2_sd);
-                        }});
-                    }
+                        }
+                    }});
                 }
                 0x3: decode FUNCT7 {
                     0x0: sltu({{
                         Rd = (rvZext(Rs1) < rvZext(Rs2)) ? 1 : 0;
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_mulhu({{
-                            Rd_sw = ((uint64_t)Rs1_uw * Rs2_uw) >> 32;
-                        }}, IntMultOp);
-                        0x1: mulhu({{
-                            uint64_t Rs1_lo = (uint32_t)Rs1;
-                            uint64_t Rs1_hi = Rs1 >> 32;
-                            uint64_t Rs2_lo = (uint32_t)Rs2;
-                            uint64_t Rs2_hi = Rs2 >> 32;
-
-                            uint64_t hi = Rs1_hi*Rs2_hi;
-                            uint64_t mid1 = Rs1_hi*Rs2_lo;
-                            uint64_t mid2 = Rs1_lo*Rs2_hi;
-                            uint64_t lo = Rs1_lo*Rs2_lo;
-                            uint64_t carry = ((uint64_t)(uint32_t)mid1
-                                    + (uint64_t)(uint32_t)mid2
-                                    + (lo >> 32)) >> 32;
-
-                            Rd = hi + (mid1 >> 32) + (mid2 >> 32) + carry;
-                        }}, IntMultOp);
-                    }
+                    0x1: mulhu({{
+                        if (machInst.rv_type == RV32) {
+                            Rd = (int32_t)mulhu_32(Rs1, Rs2);
+                        } else {
+                            Rd = mulhu_64(Rs1, Rs2);
+                        }
+                    }}, IntMultOp);
                     0x5: clmulh({{
                         uint64_t result = 0;
                         uint64_t xlen = rvSelect(32, 64);
@@ -1235,30 +1160,13 @@ decode QUADRANT default Unknown::unknown() {
                     0x0: xor({{
                         Rd = rvSext(Rs1 ^ Rs2);
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_div({{
-                            constexpr int32_t kRsMin = \
-                                std::numeric_limits<int32_t>::min();
-                            if (Rs2_sw == 0) {
-                                Rd_sw = -1;
-                            } else if (Rs1_sw == kRsMin && Rs2_sw == -1) {
-                                Rd_sw = kRsMin;
-                            } else {
-                                Rd_sw = Rs1_sw/Rs2_sw;
-                            }
-                        }}, IntDivOp);
-                        0x1: div({{
-                            constexpr int64_t kRsMin = \
-                                std::numeric_limits<int64_t>::min();
-                            if (Rs2_sd == 0) {
-                                Rd_sd = -1;
-                            } else if (Rs1_sd == kRsMin && Rs2_sd == -1) {
-                                Rd_sd = kRsMin;
-                            } else {
-                                Rd_sd = Rs1_sd/Rs2_sd;
-                            }
-                        }}, IntDivOp);
-                    }
+                    0x1: div({{
+                        if (machInst.rv_type == RV32) {
+                            Rd_sd = div<int32_t>(Rs1, Rs2);
+                        } else {
+                            Rd_sd = div<int64_t>(Rs1, Rs2);
+                        }
+                    }}, IntDivOp);
                     0x4: pack({{
                         int xlen = rvSelect(32, 64);
                         Rd = rvSext(
@@ -1272,14 +1180,13 @@ decode QUADRANT default Unknown::unknown() {
                     0x10: sh2add({{
                         Rd = rvSext((Rs1 << 2) + Rs2);
                     }});
-                    0x14: decode RVTYPE {
-                        0x0: xperm8_32({{
-                            Rd_sw = _rvk_emu_xperm8_32(Rs1_sw, Rs2_sw);
-                        }});
-                        0x1: xperm8_64({{
+                    0x14: xperm8({{
+                        if (machInst.rv_type == RV32) {
+                            Rd_sd = _rvk_emu_xperm8_32(Rs1_sd, Rs2_sd);
+                        } else {
                             Rd_sd = _rvk_emu_xperm8_64(Rs1_sd, Rs2_sd);
-                        }});
-                    }
+                        }
+                    }});
                     0x20: xnor({{
                         Rd = rvSext(~(Rs1 ^ Rs2));
                     }});
@@ -1289,22 +1196,13 @@ decode QUADRANT default Unknown::unknown() {
                         Rd = rvSext(rvZext(Rs1) >>
                                     rvSelect(Rs2<4:0>, Rs2<5:0>));
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_divu({{
-                            if (Rs2_uw == 0) {
-                                Rd_sw = std::numeric_limits<uint32_t>::max();
-                            } else {
-                                Rd_sw = Rs1_uw/Rs2_uw;
-                            }
-                        }}, IntDivOp);
-                        0x1: divu({{
-                            if (Rs2 == 0) {
-                                Rd = std::numeric_limits<uint64_t>::max();
-                            } else {
-                                Rd = Rs1/Rs2;
-                            }
-                        }}, IntDivOp);
-                    }
+                    0x1: divu({{
+                        if (machInst.rv_type == RV32) {
+                            Rd = (int32_t)divu<uint32_t>(Rs1, Rs2);
+                        } else {
+                            Rd = divu<uint64_t>(Rs1, Rs2);
+                        }
+                    }}, IntDivOp);
                     0x20: sra({{
                         Rd = rvSext(Rs1_sd) >> rvSelect(Rs2<4:0>, Rs2<5:0>);
                     }});
@@ -1327,30 +1225,13 @@ decode QUADRANT default Unknown::unknown() {
                     0x0: or({{
                         Rd = rvSext(Rs1 | Rs2);
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_rem({{
-                            constexpr int32_t kRsMin = \
-                                std::numeric_limits<int32_t>::min();
-                            if (Rs2_sw == 0) {
-                                Rd_sw = Rs1_sw;
-                            } else if (Rs1_sw == kRsMin && Rs2_sw == -1) {
-                                Rd_sw = 0;
-                            } else {
-                                Rd_sw = Rs1_sw%Rs2_sw;
-                            }
-                        }}, IntDivOp);
-                        0x1: rem({{
-                            constexpr int64_t kRsMin = \
-                                std::numeric_limits<int64_t>::min();
-                            if (Rs2_sd == 0) {
-                                Rd = Rs1_sd;
-                            } else if (Rs1_sd == kRsMin && Rs2_sd == -1) {
-                                Rd = 0;
-                            } else {
-                                Rd = Rs1_sd%Rs2_sd;
-                            }
-                        }}, IntDivOp);
-                    }
+                    0x1: rem({{
+                        if (machInst.rv_type == RV32) {
+                            Rd_sd = rem<int32_t>(Rs1, Rs2);
+                        } else {
+                            Rd_sd = rem<int64_t>(Rs1, Rs2);
+                        }
+                    }}, IntDivOp);
                     0x5: max({{
                         Rd_sd = std::max(rvSext(Rs1_sd), rvSext(Rs2_sd));
                     }});
@@ -1365,22 +1246,13 @@ decode QUADRANT default Unknown::unknown() {
                     0x0: and({{
                         Rd = rvSext(Rs1 & Rs2);
                     }});
-                    0x1: decode RVTYPE {
-                        0x0: rv32_remu({{
-                            if (Rs2_uw == 0) {
-                                Rd_sw = Rs1_uw;
-                            } else {
-                                Rd_sw = Rs1_uw%Rs2_uw;
-                            }
-                        }}, IntDivOp);
-                        0x1: remu({{
-                            if (Rs2 == 0) {
-                                Rd = Rs1;
-                            } else {
-                                Rd = Rs1%Rs2;
-                            }
-                        }}, IntDivOp);
-                    }
+                    0x1: remu({{
+                        if (machInst.rv_type == RV32) {
+                            Rd = (int32_t)remu<uint32_t>(Rs1, Rs2);
+                        } else {
+                            Rd = remu<uint64_t>(Rs1, Rs2);
+                        }
+                    }}, IntDivOp);
                     0x4: packh({{
                         // It doesn't need to sign ext as MSB is always 0
                         Rd = (Rs2_ub << 8) | Rs1_ub;
@@ -1432,15 +1304,7 @@ decode QUADRANT default Unknown::unknown() {
                     }
                     0x4: decode FUNCT7 {
                         0x1: divw({{
-                            constexpr int32_t kRsMin = \
-                                std::numeric_limits<int32_t>::min();
-                            if (Rs2_sw == 0) {
-                                Rd_sd = -1;
-                            } else if (Rs1_sw == kRsMin && Rs2_sw == -1) {
-                                Rd_sd = kRsMin;
-                            } else {
-                                Rd_sd = Rs1_sw/Rs2_sw;
-                            }
+                            Rd_sd = div<int32_t>(Rs1, Rs2);
                         }}, IntDivOp);
                         0x4: packw({{
                             Rd_sd = sext<32>((Rs2_uh << 16) | Rs1_uh);
@@ -1454,11 +1318,7 @@ decode QUADRANT default Unknown::unknown() {
                             Rd_sd = (int32_t)(Rs1_uw >> Rs2<4:0>);
                         }});
                         0x1: divuw({{
-                            if (Rs2_uw == 0) {
-                                Rd_sd = std::numeric_limits<uint64_t>::max();
-                            } else {
-                                Rd_sd = (int32_t)(Rs1_uw/Rs2_uw);
-                            }
+                            Rd = sext<32>(divu<uint32_t>(Rs1, Rs2));
                         }}, IntDivOp);
                         0x20: sraw({{
                             Rd_sd = Rs1_sw >> Rs2<4:0>;
@@ -1470,26 +1330,14 @@ decode QUADRANT default Unknown::unknown() {
                     }
                     0x6:  decode FUNCT7 {
                         0x1: remw({{
-                            constexpr int32_t kRsMin = \
-                                std::numeric_limits<int32_t>::min();
-                            if (Rs2_sw == 0) {
-                                Rd_sd = Rs1_sw;
-                            } else if (Rs1_sw == kRsMin && Rs2_sw == -1) {
-                                Rd_sd = 0;
-                            } else {
-                                Rd_sd = Rs1_sw%Rs2_sw;
-                            }
+                            Rd_sd = rem<int32_t>(Rs1, Rs2);
                         }}, IntDivOp);
                         0x10: sh3add_uw({{
                             Rd = (((uint64_t)Rs1_uw) << 3) + Rs2;
                         }});
                     }
                     0x7: remuw({{
-                        if (Rs2_uw == 0) {
-                            Rd_sd = (int32_t)Rs1_uw;
-                        } else {
-                            Rd_sd = (int32_t)(Rs1_uw%Rs2_uw);
-                        }
+                        Rd = sext<32>(remu<uint32_t>(Rs1, Rs2));
                     }}, IntDivOp);
                 }
             }

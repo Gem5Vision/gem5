@@ -203,6 +203,19 @@ namespace ArmISA
         Bitfield<3, 0> el0;
     EndBitUnion(AA64PFR0)
 
+    BitUnion64(AA64ZFR0)
+        Bitfield<59, 56> f64mm;
+        Bitfield<55, 52> f32mm;
+        Bitfield<47, 44> i8mm;
+        Bitfield<43, 40> sm4;
+        Bitfield<35, 32> sha3;
+        Bitfield<27, 24> b16b16;
+        Bitfield<23, 20> bf16;
+        Bitfield<19, 16> bitPerm;
+        Bitfield<7, 4> aes;
+        Bitfield<3, 0> sveVer;
+    EndBitUnion(AA64ZFR0)
+
     BitUnion64(AA64SMFR0)
         Bitfield<63> fa64;
         Bitfield<59, 56> smEver;
@@ -345,7 +358,8 @@ namespace ArmISA
         Bitfield<0>  cp0;
     EndBitUnion(NSACR)
 
-    BitUnion32(SCR)
+    BitUnion64(SCR)
+        Bitfield<40> trndr;
         Bitfield<21> fien;
         Bitfield<20> nmea;
         Bitfield<19> ease;
